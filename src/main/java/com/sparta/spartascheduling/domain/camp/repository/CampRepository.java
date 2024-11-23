@@ -1,4 +1,7 @@
 package com.sparta.spartascheduling.domain.camp.repository;
 
-public class CampRepository {
+import com.sparta.spartascheduling.domain.camp.entity.Camp;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CampRepository extends JpaRepository<Camp, Long> {
 }
