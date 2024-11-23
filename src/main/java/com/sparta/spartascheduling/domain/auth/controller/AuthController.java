@@ -23,6 +23,4 @@ public class AuthController {
         return authService.signup(signupRequestDto);
     }
 
-
-
 }

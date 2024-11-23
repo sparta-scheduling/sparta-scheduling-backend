@@ -10,10 +10,10 @@ public class SignupResponseDto {
 
 	private String email;
 
-	public SignupResponseDto(Long id, String username, String email) {
+	public SignupResponseDto(Long id, String email, String username) {
 		this.id = id;
-		this.username = username;
 		this.email = email;
+		this.username = username;
 	}
 
 }
