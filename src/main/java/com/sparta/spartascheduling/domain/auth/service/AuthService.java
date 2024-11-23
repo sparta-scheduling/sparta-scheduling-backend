@@ -43,8 +43,9 @@ public class AuthService {
 				.username(requestDto.getUsername())
 				.build();
 
+			boolean isAdmin = true;
 			Manager savedManager = managerRepository.save(newManager);
-			jwtUtil.createToken(savedManager.getId(), savedManager.getEmail(), savedManager.getUsername());
+			jwtUtil.createToken(savedManager.getId(), savedManager.getEmail(), savedManager.getUsername(), isAdmin);
 			return new SignupResponseDto(savedManager.getId(), savedManager.getEmail(), savedManager.getUsername());
 		}
 
@@ -54,8 +55,9 @@ public class AuthService {
 			.username(requestDto.getUsername())
 			.build();
 
+		boolean isAdmin = false;
 		User savedUser = userRepository.save(newUser);
-		jwtUtil.createToken(savedUser.getId(), savedUser.getEmail(), savedUser.getUsername());
+		jwtUtil.createToken(savedUser.getId(), savedUser.getEmail(), savedUser.getUsername(), false);
 		return new SignupResponseDto(savedUser.getId(), savedUser.getEmail(), savedUser.getUsername());
 	}
 }
