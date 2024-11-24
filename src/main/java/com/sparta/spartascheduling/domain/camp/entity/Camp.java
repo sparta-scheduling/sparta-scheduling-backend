@@ -3,7 +3,6 @@ package com.sparta.spartascheduling.domain.camp.entity;
 import java.time.LocalDate;
 
 import com.sparta.spartascheduling.common.entity.Timestamped;
-import com.sparta.spartascheduling.domain.camp.dto.CampRequestDto;
 import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
 
@@ -60,16 +59,17 @@ public class Camp extends Timestamped {
 	private int remainCount;
 
 	// 정적 팩토리 메서드로 캠프 생성 및 유효성 검사
-	public static Camp createCamp(CampRequestDto requestDto, Manager manager) {
-		validateCampDates(requestDto.getOpenDate(), requestDto.getCloseDate());
-		validateMaxCount(requestDto.getMaxCount());
+	public static Camp createCamp(String name, String contents, LocalDate openDate, LocalDate closeDate, int maxCount,
+		Manager manager) {
+		validateCampDates(openDate, closeDate);
+		validateMaxCount(maxCount);
 
 		Camp camp = Camp.builder()
-			.name(requestDto.getName())
-			.contents(requestDto.getContents())
-			.openDate(requestDto.getOpenDate())
-			.closeDate(requestDto.getCloseDate())
-			.maxCount(requestDto.getMaxCount())
+			.name(name)
+			.contents(contents)
+			.openDate(openDate)
+			.closeDate(closeDate)
+			.maxCount(maxCount)
 			.manager(manager)
 			.status(CampStatus.CREATED)
 			.build();
@@ -83,9 +83,7 @@ public class Camp extends Timestamped {
 		if (openDate.isAfter(closeDate)) {
 			throw new IllegalArgumentException("시작일은 종료일보다 빠르거나 같아야 합니다.");
 		}
-		if (openDate.isBefore(LocalDate.now())) {
-			throw new IllegalArgumentException("시작일은 오늘 이후여야 합니다.");
-		}
+		// 시작일이 과거여도 캠프를 생성할 수 있도록 검증 제거
 	}
 
 	// 최대 인원 유효성 검사 메서드
@@ -106,9 +104,6 @@ public class Camp extends Timestamped {
 		} else if (today.isBefore(this.closeDate) || today.isEqual(this.closeDate)) {
 			this.status = CampStatus.IN_PROGRESS; // 진행 중
 		}
-	}
-
-	public void setId(long l) { // 테스트용
 	}
 
 	// 캠프신청될때 남은인원 -1
