@@ -8,4 +8,5 @@ public interface UserCampRepository extends JpaRepository<UserCamp, Long> {
 
     // 튜터 아이디 없어서 임시로 - 나의캠프(튜터)
     List<UserCamp> findByCampId(Long campId);
+
 }
