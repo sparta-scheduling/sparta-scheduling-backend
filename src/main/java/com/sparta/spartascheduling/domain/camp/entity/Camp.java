@@ -43,4 +43,15 @@ public class Camp extends Timestamped {
 	private int maxCount;
 
 	private int remainCount;
+
+
+	// 캠프신청될때 남은인원 -1
+	public void decreaseRemainCount() {
+		if(remainCount <= 0){
+			throw new IllegalArgumentException("이미 남은인원이 0입니다.");
+		}
+		this.remainCount--;
+	}
+
+
 }
