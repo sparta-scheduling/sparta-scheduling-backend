@@ -4,14 +4,19 @@ import org.springframework.stereotype.Service;
 
 import com.sparta.spartascheduling.common.config.PasswordEncoder;
 import com.sparta.spartascheduling.common.config.JwtUtil;
+import com.sparta.spartascheduling.domain.auth.dto.request.SigninRequestDto;
 import com.sparta.spartascheduling.domain.auth.dto.request.SignupRequestDto;
 import com.sparta.spartascheduling.domain.auth.dto.response.SignupResponseDto;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
 import com.sparta.spartascheduling.domain.manager.repository.ManagerRepository;
+import com.sparta.spartascheduling.domain.tutor.entity.Tutor;
+import com.sparta.spartascheduling.domain.tutor.repository.TutorRepository;
 import com.sparta.spartascheduling.domain.user.entity.User;
+import com.sparta.spartascheduling.domain.user.enums.DeleteStatus;
 import com.sparta.spartascheduling.domain.user.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -21,6 +26,7 @@ public class AuthService {
 
 	private final UserRepository userRepository;
 	private final ManagerRepository managerRepository;
+	private final TutorRepository tutorRepository;
 	private final PasswordEncoder passwordEncoder;
 	//private final JwtUtil jwtUtil;
 
@@ -55,5 +61,39 @@ public class AuthService {
 
 		User savedUser = userRepository.save(newUser);
 		return new SignupResponseDto(savedUser.getId(), savedUser.getEmail(), savedUser.getUsername());
+	}
+
+	public void signin(SigninRequestDto requestDto) {
+		if (requestDto.getUserType().equals("ADMIN")) {
+			Manager existManager = managerRepository.findByEmail(requestDto.getEmail()).orElseThrow(
+				() -> new IllegalArgumentException("존재하는 매니저가 없습니다.")
+			);
+
+			if (passwordEncoder.matches(requestDto.getPassword(), existManager.getPassword())) {
+				throw new IllegalArgumentException("이메일과 비밀번호 조합이 맞지 않습니다.");
+			}
+
+		} else if (requestDto.getUserType().equals("TUTOR")) {
+			Tutor existTutor = tutorRepository.findByEmail(requestDto.getEmail()).orElseThrow(
+				() -> new IllegalArgumentException("존재하는 튜터가 없습니다.")
+			);
+
+			if (passwordEncoder.matches(requestDto.getPassword(), existTutor.getPassword())) {
+				throw new IllegalArgumentException("이메일과 비밀번호 조합이 맞지 않습니다.");
+			}
+
+		} else {
+			User existUser = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(
+				() -> new IllegalArgumentException("존재하는 학생이 없습니다.")
+			);
+
+			if (existUser.getStatus().equals(DeleteStatus.INACTIVE)) {
+				throw new IllegalArgumentException("탈퇴한 유저입니다.");
+			}
+
+			if (passwordEncoder.matches(requestDto.getPassword(), existUser.getPassword())) {
+				throw new IllegalArgumentException("이메일과 비밀번호 조합이 맞지 않습니다.");
+			}
+		}
 	}
 }
