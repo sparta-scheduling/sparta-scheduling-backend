@@ -57,7 +57,8 @@ public class Camp extends Timestamped {
 			.status(CampStatus.CREATED)
 			.build();
 
-		camp.updateStatus();
+		camp.updateStatus(); // 생성 시 상태 업데이트
+
 		return camp;
 	}
 
@@ -93,7 +94,11 @@ public class Camp extends Timestamped {
 		}
 	}
 
-	public void setId(long l) { // 테스트용
+	// 남은 인원수 계산 메서드
+	public int calculateRemainCount(int participantCount) {
+		return this.maxCount - participantCount;
+	}
 
+	public void setId(long l) { // 테스트용
 	}
 }
