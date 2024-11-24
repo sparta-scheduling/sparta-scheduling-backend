@@ -26,7 +26,7 @@ public class AuthService {
 
 	public SignupResponseDto signup(SignupRequestDto requestDto) {
 
-		if (userRepository.existsByEmail(requestDto.getEmail())) {
+		if (userRepository.existsByEmail(requestDto.getEmail()) || managerRepository.existsByEmail(requestDto.getEmail())) {
 			throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
 		}
 
