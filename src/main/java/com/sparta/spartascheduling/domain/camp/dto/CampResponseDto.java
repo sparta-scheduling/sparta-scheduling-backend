@@ -1,16 +1,15 @@
 package com.sparta.spartascheduling.domain.camp.dto;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
 import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 
 import lombok.Getter;
-import lombok.Setter;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
-@Setter
+
 public class CampResponseDto {
 	private Long id;
 	private String name;
@@ -21,14 +20,28 @@ public class CampResponseDto {
 	private int maxCount;
 	private LocalDateTime createdAt;
 
-	public CampResponseDto(Camp camp) {
-		this.id = camp.getId();
-		this.name = camp.getName();
-		this.contents = camp.getContents();
-		this.status = camp.getStatus();
-		this.openDate = camp.getOpenDate();
-		this.closeDate = camp.getCloseDate();
-		this.maxCount = camp.getMaxCount();
-		this.createdAt = camp.getCreatedAt();
+	public CampResponseDto(Long id, String name, String contents, CampStatus status, LocalDate openDate,
+		LocalDate closeDate, int maxCount, LocalDateTime createdAt) {
+		this.id = id;
+		this.name = name;
+		this.contents = contents;
+		this.status = status;
+		this.openDate = openDate;
+		this.closeDate = closeDate;
+		this.maxCount = maxCount;
+		this.createdAt = createdAt;
+	}
+
+	public static CampResponseDto from(Camp camp) {
+		return new CampResponseDto(
+			camp.getId(),
+			camp.getName(),
+			camp.getContents(),
+			camp.getStatus(),
+			camp.getOpenDate(),
+			camp.getCloseDate(),
+			camp.getMaxCount(),
+			camp.getCreatedAt()
+		);
 	}
 }
