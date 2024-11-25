@@ -10,9 +10,4 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface CampRepository extends JpaRepository<Camp, Long> {
 	boolean existsByNameAndOpenDate(String name, LocalDate openDate);
-
-    // 캠프 신청시 본인이 참여한 전체 캠프 체크
-    @Query("SELECT c.status FROM Camp c WHERE c.id IN :campIds")
-    List<String> findCampStatusesByIds(List<Long> campIds);
-
 }

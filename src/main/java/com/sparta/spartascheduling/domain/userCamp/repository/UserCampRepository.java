@@ -1,5 +1,6 @@
 package com.sparta.spartascheduling.domain.userCamp.repository;
 
+import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 import com.sparta.spartascheduling.domain.userCamp.entity.UserCamp;
 
 import java.util.List;
@@ -14,8 +15,8 @@ public interface UserCampRepository extends JpaRepository<UserCamp, Long> {
     // 나의 캠프(학생)
     UserCamp findByUserId(Long userId);
 
-    // 현재 다른 캠프를 이미 참여중 예외
-    @Query("SELECT uc.camp.id FROM UserCamp uc WHERE uc.user.id = :userId")
-    List<Long> findCampIdsByUserId(Long userId);
+    // closed 제외한 상태값 1개라도 있는 경우 찾기
+    @Query("SELECT COUNT(uc) > 0 FROM UserCamp uc JOIN uc.camp c WHERE uc.user.id = :userId AND c.status != :status")
+    boolean existsActiveCampForUser(Long userId, CampStatus campStatus);
 
 }

@@ -1,5 +1,6 @@
 package com.sparta.spartascheduling.domain.camp.service;
 import com.sparta.spartascheduling.common.dto.AuthUser;
+import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,15 +61,9 @@ public class CampService {
 		User user = userRepository.findById(authUser.getId()).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 학생입니다."));
 		UserCamp userCampCheck = userCampRepository.findByUserId(authUser.getId());
 
-		// 회원정보 id 기준으로 캠프 ID 리스트 조회.
-		List<Long> campIds = userCampRepository.findCampIdsByUserId(authUser.getId());
-
-		// 여러 캠프 상태를 한번에 조회
-		List<String> campStatuses = campRepository.findCampStatusesByIds(campIds);
-
-		// 캠프 상태 중 하나라도 "COMPLETED"가 아닌 경우 예외 발생
-		if (!campStatuses.contains("COMPLETED")) {
-			throw new IllegalArgumentException("현재 다른 캠프를 이미 참여중입니다.");
+		boolean campCheck = userCampRepository.existsActiveCampForUser(authUser.getId(), CampStatus.CLOSED);
+		if (campCheck) {
+			throw new IllegalArgumentException("현재 참여중인 캠프가 있어서 신청할 수 없습니다");
 		}
 
 		if(userCampCheck != null && campId == userCampCheck.getCamp().getId()){
