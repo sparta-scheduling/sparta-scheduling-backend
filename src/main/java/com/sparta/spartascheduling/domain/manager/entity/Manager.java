@@ -40,4 +40,8 @@ public class Manager extends Timestamped {
 		this.email = email;
 		this.password = password;
 	}
+
+	public static Manager createManager(String mail, String password, String testManager) {
+		return new Manager(mail, password, testManager);
+	}
 }

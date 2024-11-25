@@ -34,7 +34,7 @@ public class UserCamp extends Timestamped {
 	private Camp camp;
 
 
-	private UserCamp(User user, Camp camp) {
+	public UserCamp(User user, Camp camp) {
 		this.user = user;
 		this.camp = camp;
 	}
