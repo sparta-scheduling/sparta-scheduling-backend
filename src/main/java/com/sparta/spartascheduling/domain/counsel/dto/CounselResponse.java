@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import com.sparta.spartascheduling.domain.counsel.entity.Counsel;
 import com.sparta.spartascheduling.domain.counsel.enums.CounselStatus;
 
-public record CreateCounselResponse(
+public record CounselResponse(
 	Long id,
 	Long userId,
 	Long tutorId,
@@ -13,8 +13,8 @@ public record CreateCounselResponse(
 	LocalDateTime dateTime,
 	CounselStatus status
 ) {
-	public static CreateCounselResponse of(Counsel counsel) {
-		return new CreateCounselResponse(
+	public static CounselResponse from(Counsel counsel) {
+		return new CounselResponse(
 			counsel.getId(),
 			counsel.getUser().getId(),
 			counsel.getTutor().getId(),

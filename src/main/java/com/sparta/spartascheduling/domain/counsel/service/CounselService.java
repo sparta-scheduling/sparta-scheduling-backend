@@ -2,12 +2,15 @@ package com.sparta.spartascheduling.domain.counsel.service;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.sparta.spartascheduling.common.dto.AuthUser;
 import com.sparta.spartascheduling.domain.counsel.dto.CounselRequest;
-import com.sparta.spartascheduling.domain.counsel.dto.CreateCounselResponse;
+import com.sparta.spartascheduling.domain.counsel.dto.CounselResponse;
 import com.sparta.spartascheduling.domain.counsel.entity.Counsel;
 import com.sparta.spartascheduling.domain.counsel.enums.CounselStatus;
 import com.sparta.spartascheduling.domain.counsel.repository.CounselRepository;
@@ -29,7 +32,14 @@ public class CounselService {
 	private final TutorRepository tutorRepository;
 	private final UserCampRepository userCampRepository;
 
-	public CreateCounselResponse createCounsel(Long id, CounselRequest request) {
+	public CounselResponse createCounsel(AuthUser authUser, CounselRequest request) {
+		// 유저 타입 확인
+		if(!"USER".equals(authUser.getUserType())){
+			throw new IllegalArgumentException("학생만 접근이 가능합니다.");
+		}
+
+		Long id = authUser.getId();
+
 		// 유저 확인
 		User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
 
@@ -74,6 +84,26 @@ public class CounselService {
 
 		counselRepository.save(newCounsel);
 
-		return CreateCounselResponse.of(newCounsel);
+		return CounselResponse.from(newCounsel);
+	}
+
+	@Transactional(readOnly = true)
+	public List<CounselResponse> getCounselFromTutor(AuthUser authUser) {
+		// 유저 타입 확인
+		if(!"TUTOR".equals(authUser.getUserType())){
+			throw new IllegalArgumentException("튜터만 접근이 가능합니다.");
+		}
+
+		Long tutorId = authUser.getId();
+
+		// 유저 확인
+		Tutor tutor = tutorRepository.findById(tutorId).orElseThrow(() -> new IllegalArgumentException("튜터를 찾을 수 없습니다."));
+
+		// 상담 조회
+		List<Counsel> counselList = counselRepository.findByTutor(tutor);
+
+		return counselList.stream()
+			.map(CounselResponse::from)
+			.toList();
 	}
 }
