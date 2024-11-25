@@ -3,7 +3,6 @@ package com.sparta.spartascheduling.domain.auth.service;
 import org.springframework.stereotype.Service;
 
 import com.sparta.spartascheduling.common.config.PasswordEncoder;
-import com.sparta.spartascheduling.common.config.JwtUtil;
 import com.sparta.spartascheduling.domain.auth.dto.request.SigninRequestDto;
 import com.sparta.spartascheduling.domain.auth.dto.request.SignupRequestDto;
 import com.sparta.spartascheduling.domain.auth.dto.response.SignupResponseDto;
@@ -16,7 +15,6 @@ import com.sparta.spartascheduling.domain.user.enums.DeleteStatus;
 import com.sparta.spartascheduling.domain.user.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -28,12 +26,11 @@ public class AuthService {
 	private final ManagerRepository managerRepository;
 	private final TutorRepository tutorRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final TutorRepository tutorRepository;
-	//private final JwtUtil jwtUtil;
 
 	public SignupResponseDto signup(SignupRequestDto requestDto) {
 
-		if (userRepository.existsByEmail(requestDto.getEmail()) || managerRepository.existsByEmail(requestDto.getEmail()) || tutorRepository.existsByEmail(requestDto.getEmail())) {
+		if (userRepository.existsByEmail(requestDto.getEmail()) || managerRepository.existsByEmail(
+			requestDto.getEmail()) || tutorRepository.existsByEmail(requestDto.getEmail())) {
 			throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
 		}
 
