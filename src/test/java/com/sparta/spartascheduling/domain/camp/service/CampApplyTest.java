@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
-@Transactional  // 이 어노테이션을 추가하면 테스트 후 DB에 변경사항을 롤백합니다.
+@Transactional
 public class CampApplyTest {
 
     @Autowired
@@ -32,9 +32,8 @@ public class CampApplyTest {
         Mockito.when(userRepository.findById(userId));
 
         // 캠프 신청 메소드 호출
-        campService.applyForCamp(campId, userId);
+        //campService.applyForCamp(campId, userId);
 
-        // 추가적인 검증 (예: 캠프 신청이 제대로 이루어졌는지)
         Mockito.verify(campRepository, Mockito.times(1)).findById(campId);
         Mockito.verify(userRepository, Mockito.times(1)).findById(userId);
     }

@@ -33,6 +33,6 @@ public class CampController {
 	// 캠프 신청 - 동시성 제어 할 곳
 	@PostMapping("/camps/{campId}")
 	public void applyForCamp(@PathVariable Long campId, @Auth AuthUser authUser){
-		campService.applyForCamp(campId, authUser.getId());
+		campService.applyForCamp(campId, authUser);
 	}
 }
