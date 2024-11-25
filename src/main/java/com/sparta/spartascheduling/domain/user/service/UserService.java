@@ -18,11 +18,10 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserCampRepository userCampRepository;
-    private final UserRepository userRepository;
 
-    public UserMypageDto getMypage() {
-        // 회원 아이디 없어서 임시로
-        UserCamp userCamp = userCampRepository.findByUserId(1L);
+
+    public UserMypageDto getMypage(AuthUser authUser) {
+        UserCamp userCamp = userCampRepository.findByUserId(authUser.getId());
         Camp camp = userCamp.getCamp();
         return new UserMypageDto(camp.getName());
     }

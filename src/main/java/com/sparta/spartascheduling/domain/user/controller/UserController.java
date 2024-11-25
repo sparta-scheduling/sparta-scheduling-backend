@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -19,8 +18,8 @@ public class UserController {
 
     // 나의 캠프(학생)
     @GetMapping("/mypage")
-    public ResponseEntity<UserMypageDto> getMypage() { // 나중에 회원정보 받아서 처리
-        return ResponseEntity.ok(userService.getMypage());
+    public ResponseEntity<UserMypageDto> getMypage(@Auth AuthUser authUser) {
+        return ResponseEntity.ok(userService.getMypage(authUser));
     }
 
     @DeleteMapping("/user/{userId}")
