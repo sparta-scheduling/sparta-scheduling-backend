@@ -67,7 +67,7 @@ public class AuthService {
 				() -> new IllegalArgumentException("존재하는 매니저가 없습니다.")
 			);
 
-			if (passwordEncoder.matches(requestDto.getPassword(), existManager.getPassword())) {
+			if (!passwordEncoder.matches(requestDto.getPassword(), existManager.getPassword())) {
 				throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 			}
 
@@ -76,7 +76,7 @@ public class AuthService {
 				() -> new IllegalArgumentException("존재하는 튜터가 없습니다.")
 			);
 
-			if (passwordEncoder.matches(requestDto.getPassword(), existTutor.getPassword())) {
+			if (!passwordEncoder.matches(requestDto.getPassword(), existTutor.getPassword())) {
 				throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 			}
 
@@ -89,7 +89,7 @@ public class AuthService {
 				throw new IllegalArgumentException("탈퇴한 유저입니다.");
 			}
 
-			if (passwordEncoder.matches(requestDto.getPassword(), existUser.getPassword())) {
+			if (!passwordEncoder.matches(requestDto.getPassword(), existUser.getPassword())) {
 				throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 			}
 		}
