@@ -32,4 +32,17 @@ public class UserCamp extends Timestamped {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "camp_id", nullable = false)
 	private Camp camp;
+
+
+	private UserCamp(User user, Camp camp) {
+		this.user = user;
+		this.camp = camp;
+	}
+
+	public static UserCamp of(User user, Camp camp) {
+		return new UserCamp(user, camp);
+	}
+
+
+
 }

@@ -55,6 +55,7 @@ public class Camp extends Timestamped {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "manager_id", nullable = false)
 	private Manager manager;
+  private int remainCount;
 
 	// 정적 팩토리 메서드로 캠프 생성 및 유효성 검사
 	public static Camp createCamp(String name, String contents, LocalDate openDate, LocalDate closeDate, int maxCount,
@@ -103,4 +104,13 @@ public class Camp extends Timestamped {
 			this.status = CampStatus.IN_PROGRESS; // 진행 중
 		}
 	}
+
+	// 캠프신청될때 남은인원 -1
+	public void decreaseRemainCount() {
+		if(remainCount <= 0){
+			throw new IllegalArgumentException("이미 남은인원이 0입니다.");
+		}
+		this.remainCount--;
+	}
+
 }
