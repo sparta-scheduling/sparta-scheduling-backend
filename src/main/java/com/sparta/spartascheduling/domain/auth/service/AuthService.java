@@ -8,6 +8,7 @@ import com.sparta.spartascheduling.domain.auth.dto.request.SignupRequestDto;
 import com.sparta.spartascheduling.domain.auth.dto.response.SignupResponseDto;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
 import com.sparta.spartascheduling.domain.manager.repository.ManagerRepository;
+import com.sparta.spartascheduling.domain.tutor.repository.TutorRepository;
 import com.sparta.spartascheduling.domain.user.entity.User;
 import com.sparta.spartascheduling.domain.user.repository.UserRepository;
 
@@ -22,11 +23,12 @@ public class AuthService {
 	private final UserRepository userRepository;
 	private final ManagerRepository managerRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final TutorRepository tutorRepository;
 	//private final JwtUtil jwtUtil;
 
 	public SignupResponseDto signup(SignupRequestDto requestDto) {
 
-		if (userRepository.existsByEmail(requestDto.getEmail()) || managerRepository.existsByEmail(requestDto.getEmail())) {
+		if (userRepository.existsByEmail(requestDto.getEmail()) || managerRepository.existsByEmail(requestDto.getEmail()) || tutorRepository.existsByEmail(requestDto.getEmail())) {
 			throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
 		}
 
