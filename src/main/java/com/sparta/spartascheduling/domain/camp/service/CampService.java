@@ -1,5 +1,7 @@
 package com.sparta.spartascheduling.domain.camp.service;
 
+import com.sparta.spartascheduling.common.dto.AuthUser;
+
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -17,18 +19,25 @@ import com.sparta.spartascheduling.domain.userCamp.repository.UserCampRepository
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.stereotype.Service;
+
 @Service
 @RequiredArgsConstructor
 public class CampService {
+
 	private final CampRepository campRepository;
 	private final UserCampRepository userCampRepository;
 	private final UserRepository userRepository;
 	private final ManagerRepository managerRepository;
 
-	public CampResponseDto createCamp(CampRequestDto requestDto, Long managerId) {
-		Manager manager = managerRepository.findById(managerId)
+	public CampResponseDto createCamp(CampRequestDto requestDto, AuthUser authUser) {
+		// userType 검증
+		if (!"ADMIN".equals(authUser.getUserType())) {
+			throw new IllegalArgumentException("ADMIN 권한이 필요합니다.");
+		}
+		// 매니저 조회
+		Manager manager = managerRepository.findByEmail(authUser.getEmail())
 			.orElseThrow(() -> new IllegalArgumentException("매니저를 찾을 수 없습니다."));
-
 		// 중복 캠프 확인
 		if (campRepository.existsByNameAndOpenDate(requestDto.getName(), requestDto.getOpenDate())) {
 			throw new IllegalArgumentException("같은 이름과 시작일의 캠프가 이미 존재합니다.");
