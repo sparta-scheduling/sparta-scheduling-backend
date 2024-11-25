@@ -70,7 +70,7 @@ public class AuthService {
 			);
 
 			if (passwordEncoder.matches(requestDto.getPassword(), existManager.getPassword())) {
-				throw new IllegalArgumentException("이메일과 비밀번호 조합이 맞지 않습니다.");
+				throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 			}
 
 		} else if (requestDto.getUserType().equals("TUTOR")) {
@@ -79,7 +79,7 @@ public class AuthService {
 			);
 
 			if (passwordEncoder.matches(requestDto.getPassword(), existTutor.getPassword())) {
-				throw new IllegalArgumentException("이메일과 비밀번호 조합이 맞지 않습니다.");
+				throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 			}
 
 		} else {
@@ -92,7 +92,7 @@ public class AuthService {
 			}
 
 			if (passwordEncoder.matches(requestDto.getPassword(), existUser.getPassword())) {
-				throw new IllegalArgumentException("이메일과 비밀번호 조합이 맞지 않습니다.");
+				throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 			}
 		}
 	}
