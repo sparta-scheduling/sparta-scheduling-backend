@@ -15,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -40,4 +41,13 @@ public class Counsel extends Timestamped {
 	private String content;
 
 	private CounselStatus status;
+
+	@Builder
+	public Counsel(User user, Tutor tutor, LocalDateTime datetime, String content, CounselStatus status) {
+		this.user = user;
+		this.tutor = tutor;
+		this.datetime = datetime;
+		this.content = content;
+		this.status = status;
+	}
 }
