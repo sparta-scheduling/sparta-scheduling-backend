@@ -28,11 +28,12 @@ public class AuthService {
 	private final ManagerRepository managerRepository;
 	private final TutorRepository tutorRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final TutorRepository tutorRepository;
 	//private final JwtUtil jwtUtil;
 
 	public SignupResponseDto signup(SignupRequestDto requestDto) {
 
-		if (userRepository.existsByEmail(requestDto.getEmail()) || managerRepository.existsByEmail(requestDto.getEmail())) {
+		if (userRepository.existsByEmail(requestDto.getEmail()) || managerRepository.existsByEmail(requestDto.getEmail()) || tutorRepository.existsByEmail(requestDto.getEmail())) {
 			throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
 		}
 
