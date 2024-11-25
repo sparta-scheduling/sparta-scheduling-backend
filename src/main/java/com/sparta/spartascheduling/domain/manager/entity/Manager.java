@@ -2,14 +2,14 @@ package com.sparta.spartascheduling.domain.manager.entity;
 
 import com.sparta.spartascheduling.common.entity.Timestamped;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,14 +31,13 @@ public class Manager extends Timestamped {
 	@Column(nullable = false)
 	private String password;
 
+	@Column(nullable = false)
+	private String username;
+
 	@Builder
 	private Manager(String username, String email, String password) {
 		this.username = username;
 		this.email = email;
 		this.password = password;
 	}
-
-	@Column(nullable = false)
-	private String username;
-
 }
