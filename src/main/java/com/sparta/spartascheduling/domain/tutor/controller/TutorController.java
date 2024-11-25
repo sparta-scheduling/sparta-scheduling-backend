@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,7 +29,7 @@ public class TutorController {
     }
 
     @PutMapping("/tutor/update-time")
-    public ResponseEntity<TutorResponseDto> updateTime(@Auth AuthUser authUser, @Valid TutorRequest request) {
+    public ResponseEntity<TutorResponseDto> updateTime(@Auth AuthUser authUser, @Valid @RequestBody TutorRequest request) {
         TutorResponseDto response = tutorService.updateTime(authUser, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
