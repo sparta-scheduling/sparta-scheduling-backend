@@ -1,14 +1,28 @@
 package com.sparta.spartascheduling.domain.camp.entity;
 
+import java.time.LocalDate;
+
 import com.sparta.spartascheduling.common.entity.Timestamped;
-import com.sparta.spartascheduling.domain.camp.dto.CampRequestDto;
 import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
 
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.time.LocalDate;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
@@ -42,23 +56,25 @@ public class Camp extends Timestamped {
 	@JoinColumn(name = "manager_id", nullable = false)
 	private Manager manager;
 
+	private int remainCount;
+
 	// 정적 팩토리 메서드로 캠프 생성 및 유효성 검사
-	public static Camp createCamp(CampRequestDto requestDto, Manager manager) {
-		validateCampDates(requestDto.getOpenDate(), requestDto.getCloseDate());
-		validateMaxCount(requestDto.getMaxCount());
+	public static Camp createCamp(String name, String contents, LocalDate openDate, LocalDate closeDate, int maxCount,
+		Manager manager) {
+		validateCampDates(openDate, closeDate);
+		validateMaxCount(maxCount);
 
 		Camp camp = Camp.builder()
-			.name(requestDto.getName())
-			.contents(requestDto.getContents())
-			.openDate(requestDto.getOpenDate())
-			.closeDate(requestDto.getCloseDate())
-			.maxCount(requestDto.getMaxCount())
+			.name(name)
+			.contents(contents)
+			.openDate(openDate)
+			.closeDate(closeDate)
+			.maxCount(maxCount)
 			.manager(manager)
 			.status(CampStatus.CREATED)
 			.build();
 
-		camp.updateStatus(); // 생성 시 상태 업데이트
-
+		camp.updateStatus();
 		return camp;
 	}
 
@@ -89,16 +105,14 @@ public class Camp extends Timestamped {
 			this.status = CampStatus.RECRUITING; // 모집 중
 		} else if (today.isBefore(this.closeDate) || today.isEqual(this.closeDate)) {
 			this.status = CampStatus.IN_PROGRESS; // 진행 중
-		} else {
-			this.status = CampStatus.CLOSED; // 종료
 		}
 	}
 
-	// 남은 인원수 계산 메서드
-	public int calculateRemainCount(int participantCount) {
-		return this.maxCount - participantCount;
-	}
-
-	public void setId(long l) { // 테스트용
+	// 캠프신청될때 남은인원 -1
+	public void decreaseRemainCount() {
+		if (remainCount <= 0) {
+			throw new IllegalArgumentException("이미 남은인원이 0입니다.");
+		}
+		this.remainCount--;
 	}
 }

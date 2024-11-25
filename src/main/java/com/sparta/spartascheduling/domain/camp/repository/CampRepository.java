@@ -1,10 +1,10 @@
 package com.sparta.spartascheduling.domain.camp.repository;
 
-import com.sparta.spartascheduling.domain.camp.entity.Camp;
+import java.time.LocalDate;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.time.LocalDate;
+import com.sparta.spartascheduling.domain.camp.entity.Camp;
 
 public interface CampRepository extends JpaRepository<Camp, Long> {
 	boolean existsByNameAndOpenDate(String name, LocalDate openDate);

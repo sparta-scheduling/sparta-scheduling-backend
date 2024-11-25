@@ -2,8 +2,17 @@ package com.sparta.spartascheduling.domain.manager.entity;
 
 import com.sparta.spartascheduling.common.entity.Timestamped;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
@@ -25,32 +34,10 @@ public class Manager extends Timestamped {
 	@Column(nullable = false)
 	private String username;
 
-	// 정적 팩토리 메서드로 매니저 생성 및 유효성 검사
-	public static Manager createManager(String email, String password, String username) {
-		validateEmail(email);
-		validatePassword(password);
-
-		return Manager.builder()
-			.email(email)
-			.password(password)
-			.username(username)
-			.build();
-	}
-
-	// 이메일 유효성 검사 메서드
-	private static void validateEmail(String email) {
-		if (email == null || email.isEmpty()) {
-			throw new IllegalArgumentException("이메일은 필수 입력 사항입니다.");
-		}
-	}
-
-	// 비밀번호 유효성 검사 메서드
-	private static void validatePassword(String password) {
-		if (password == null || password.isEmpty()) {
-			throw new IllegalArgumentException("비밀번호는 필수 입력 사항입니다.");
-		}
-	}
-
-	public void setId(long l) { // 테스트용
+	@Builder
+	private Manager(String username, String email, String password) {
+		this.username = username;
+		this.email = email;
+		this.password = password;
 	}
 }

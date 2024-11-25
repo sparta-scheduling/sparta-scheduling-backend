@@ -11,12 +11,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@NoArgsConstructor
 @Table(name = "users")
 public class User extends Timestamped {
 
@@ -29,7 +29,18 @@ public class User extends Timestamped {
 
 	private String password;
 
+	private String username;
+
 	private LocalDateTime deletedAt;
 
 	private DeleteStatus status;
+
+	@Builder
+	private User(String email, String password, String username) {
+		this.email = email;
+		this.password = password;
+		this.username = username;
+		this.deletedAt = null;
+		this.status = DeleteStatus.ACTIVE;
+	}
 }
