@@ -10,9 +10,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.sparta.spartascheduling.exception.customException.AuthException;
 import com.sparta.spartascheduling.exception.customException.CampException;
 import com.sparta.spartascheduling.exception.customException.CounselException;
+import com.sparta.spartascheduling.exception.customException.CustomAuthException;
 import com.sparta.spartascheduling.exception.customException.ManagerException;
 import com.sparta.spartascheduling.exception.customException.TutorException;
 import com.sparta.spartascheduling.exception.customException.UserCampException;
@@ -28,10 +28,10 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-	@ExceptionHandler(AuthException.class)
-	public ResponseEntity<Object> handleAuthException(final AuthException e) {
+	@ExceptionHandler(CustomAuthException.class)
+	public ResponseEntity<Object> handleAuthException(final CustomAuthException e) {
 		ExceptionCode exceptionCode = e.getExceptionCode();
-		log.error("{}, {}", exceptionCode, e.getExceptionCode());
+		log.error("{}, {}", exceptionCode.getHttpStatus(), e.getExceptionCode());
 		return ResponseEntity.status(exceptionCode.getHttpStatus())
 			.body(makeResponseExceptionDto(exceptionCode));
 	}
@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(CampException.class)
 	public ResponseEntity<Object> handleCampException(final CampException e) {
 		ExceptionCode exceptionCode = e.getExceptionCode();
-		log.error("{}, {}", exceptionCode, e.getExceptionCode());
+		log.error("{}, {}", exceptionCode.getHttpStatus(), e.getExceptionCode());
 		return ResponseEntity.status(exceptionCode.getHttpStatus())
 			.body(makeResponseExceptionDto(exceptionCode));
 	}
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(CounselException.class)
 	public ResponseEntity<Object> handleCounselException(final CounselException e) {
 		ExceptionCode exceptionCode = e.getExceptionCode();
-		log.error("{}, {}", exceptionCode, e.getExceptionCode());
+		log.error("{}, {}", exceptionCode.getHttpStatus(), e.getExceptionCode());
 		return ResponseEntity.status(exceptionCode.getHttpStatus())
 			.body(makeResponseExceptionDto(exceptionCode));
 	}
@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(TutorException.class)
 	public ResponseEntity<Object> handleTutorException(final TutorException e) {
 		ExceptionCode exceptionCode = e.getExceptionCode();
-		log.error("{}, {}", exceptionCode, e.getExceptionCode());
+		log.error("{}, {}", exceptionCode.getHttpStatus(), e.getExceptionCode());
 		return ResponseEntity.status(exceptionCode.getHttpStatus())
 			.body(makeResponseExceptionDto(exceptionCode));
 	}
@@ -71,7 +71,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(UserCampException.class)
 	public ResponseEntity<Object> handleUserCampException(final UserCampException e) {
 		ExceptionCode exceptionCode = e.getExceptionCode();
-		log.error("{}, {}", exceptionCode, e.getExceptionCode());
+		log.error("{}, {}", exceptionCode.getHttpStatus(), e.getExceptionCode());
 		return ResponseEntity.status(exceptionCode.getHttpStatus())
 			.body(makeResponseExceptionDto(exceptionCode));
 	}
@@ -79,14 +79,14 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(UserException.class)
 	public ResponseEntity<Object> handleUserException(final UserException e) {
 		ExceptionCode exceptionCode = e.getExceptionCode();
-		log.error("{}, {}", exceptionCode, e.getExceptionCode());
+		log.error("{}, {}", exceptionCode.getHttpStatus(), e.getExceptionCode());
 		return ResponseEntity.status(exceptionCode.getHttpStatus())
 			.body(makeResponseExceptionDto(exceptionCode));
 	}
 
 	private ResponseExceptionDto makeResponseExceptionDto(ExceptionCode exceptionCode) {
 		return ResponseExceptionDto.builder()
-			.code(exceptionCode.name())
+			.code(exceptionCode.getHttpStatus().toString())
 			.message(exceptionCode.getMessage())
 			.build();
 	}
@@ -95,7 +95,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
 		ExceptionCode exceptionCode = INVALID_REQUEST_PARAMETER;
-		log.error("{} : {}", exceptionCode, exceptionCode.getMessage());
+		log.error("{} : {}", exceptionCode.getHttpStatus(), exceptionCode.getMessage());
 		return ResponseEntity.status(exceptionCode.getHttpStatus())
 			.body(notValidRequestParameterDto(e, exceptionCode));
 

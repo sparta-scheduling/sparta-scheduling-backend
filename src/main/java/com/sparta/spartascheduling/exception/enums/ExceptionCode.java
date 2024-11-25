@@ -23,21 +23,38 @@ public enum ExceptionCode {
 
 	NOT_MATCH_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호를 동일하게 입력해 주십시오."),
 
+	INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
+
 	// 회원-학생 관련 예외 (user)
 	NOT_FOUND_USER(HttpStatus.NOT_FOUND, "존재하지 않는 학생입니다."),
+
+	USER_WITHDRAWN(HttpStatus.BAD_REQUEST, "탈퇴한 유저입니다."),
+
+	NO_AUTHORIZATION_USER(HttpStatus.FORBIDDEN, "학생 권한이 없습니다."),
 
 	// 캠프 관련 예외 (camp)
 	EXCEEDED_CAMP_CAPACITY(HttpStatus.BAD_REQUEST, "정원이 초과되어서 캠프를 신청할 수 없습니다."),
 
 	NOT_FOUND_CAMP(HttpStatus.NOT_FOUND, "캠프가 존재하지 않습니다."),
 
-	ALREADY_JOIN_CAMP(HttpStatus.BAD_REQUEST, "이미 소속된 캠프는 신청할 수 없습니다."),
+	ALREADY_JOIN_CAMP(HttpStatus.BAD_REQUEST, "현재 참여중인 캠프가 있어서 신청할 수 없습니다"),
 
 	ALREADY_EXIST_CAMP(HttpStatus.BAD_REQUEST, "같은 이름과 시작일의 캠프가 이미 존재합니다."),
 
+	ALREADY_APPLY_CAMP(HttpStatus.BAD_REQUEST, "중복된 캠프입니다.(신청한 이력이 존재하는 캠프입니다.)"),
+
 	// 회원과 캠프 관계 관련 예외 (userCamp)
 
+	NOT_FOUND_USER_CAMP(HttpStatus.NOT_FOUND, "유저에 맵핑된 캠프의 정보를 찾을수 없습니다."),
+
 	// 상담 관련 예외 (counsel)
+	TUTOR_NOT_IN_CAMP(HttpStatus.BAD_REQUEST, "캠프에 있는 튜터에게만 신청이 가능합니다."),
+
+	CONSULTATION_IN_PROGRESS(HttpStatus.BAD_REQUEST, "이미 진행 중인 상담이 있습니다. 새로운 상담을 신청할 수 없습니다."),
+
+	INVALID_CONSULT_DATE(HttpStatus.BAD_REQUEST, "상담을 신청할 수 없는 날짜입니다."),
+
+	INVALID_CONSULT_TIME(HttpStatus.BAD_REQUEST, "상담 시간이 아닙니다. 상담 가능 시간: {start} ~ {end}"),
 
 	// 매니저 (ADMIN) 관련 예외 (manager)
 	NO_AUTHORIZATION_ADMIN(HttpStatus.FORBIDDEN, "ADMIN 권한이 필요합니다."),
@@ -45,7 +62,9 @@ public enum ExceptionCode {
 	NOT_FOUND_MANAGER(HttpStatus.NOT_FOUND, "매니저를 찾을 수 없습니다."),
 
 	// 튜터 관련 예외 (tutor)
-	TUTOR_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 튜터입니다.");
+	NOT_FOUND_TUTOR(HttpStatus.NOT_FOUND, "존재하지 않는 튜터입니다."),
+
+	NO_AUTHORIZATION_TUTOR(HttpStatus.FORBIDDEN, "TUTOR 권한이 필요합니다.");
 
 	private final HttpStatus httpStatus;
 	private final String message;

@@ -5,10 +5,10 @@ import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 import lombok.Getter;
 
 @Getter
-public class AuthException extends RuntimeException {
+public class CustomAuthException extends RuntimeException {
 	private final ExceptionCode exceptionCode;
 
-	public AuthException(ExceptionCode exceptionCode) {
+	public CustomAuthException(ExceptionCode exceptionCode) {
 		this.exceptionCode = exceptionCode;
 	}
 }

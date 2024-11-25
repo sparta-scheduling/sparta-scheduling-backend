@@ -13,6 +13,11 @@ import com.sparta.spartascheduling.domain.tutor.repository.TutorRepository;
 import com.sparta.spartascheduling.domain.user.entity.User;
 import com.sparta.spartascheduling.domain.user.enums.DeleteStatus;
 import com.sparta.spartascheduling.domain.user.repository.UserRepository;
+import com.sparta.spartascheduling.exception.customException.CustomAuthException;
+import com.sparta.spartascheduling.exception.customException.ManagerException;
+import com.sparta.spartascheduling.exception.customException.TutorException;
+import com.sparta.spartascheduling.exception.customException.UserException;
+import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,11 +36,11 @@ public class AuthService {
 
 		if (userRepository.existsByEmail(requestDto.getEmail()) || managerRepository.existsByEmail(
 			requestDto.getEmail()) || tutorRepository.existsByEmail(requestDto.getEmail())) {
-			throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+			throw new CustomAuthException(ExceptionCode.DUPLICATED_EMAIL);
 		}
 
 		if (!requestDto.getPassword().equals(requestDto.getPasswordConfirm())) {
-			throw new IllegalArgumentException("비밀번호를 동일하게 입력해 주십시오.");
+			throw new CustomAuthException(ExceptionCode.NOT_MATCH_PASSWORD);
 		}
 
 		String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
@@ -64,33 +69,33 @@ public class AuthService {
 	public void signin(SigninRequestDto requestDto) {
 		if (requestDto.getUserType().equals("ADMIN")) {
 			Manager existManager = managerRepository.findByEmail(requestDto.getEmail()).orElseThrow(
-				() -> new IllegalArgumentException("존재하는 매니저가 없습니다.")
+				() -> new ManagerException(ExceptionCode.NOT_FOUND_MANAGER)
 			);
 
 			if (!passwordEncoder.matches(requestDto.getPassword(), existManager.getPassword())) {
-				throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+				throw new CustomAuthException(ExceptionCode.INVALID_PASSWORD);
 			}
 
 		} else if (requestDto.getUserType().equals("TUTOR")) {
 			Tutor existTutor = tutorRepository.findByEmail(requestDto.getEmail()).orElseThrow(
-				() -> new IllegalArgumentException("존재하는 튜터가 없습니다.")
+				() -> new TutorException(ExceptionCode.NOT_FOUND_TUTOR)
 			);
 
 			if (!passwordEncoder.matches(requestDto.getPassword(), existTutor.getPassword())) {
-				throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+				throw new CustomAuthException(ExceptionCode.INVALID_PASSWORD);
 			}
 
 		} else {
 			User existUser = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(
-				() -> new IllegalArgumentException("존재하는 학생이 없습니다.")
+				() -> new UserException(ExceptionCode.NOT_FOUND_USER)
 			);
 
 			if (existUser.getStatus().equals(DeleteStatus.INACTIVE)) {
-				throw new IllegalArgumentException("탈퇴한 유저입니다.");
+				throw new UserException(ExceptionCode.USER_WITHDRAWN);
 			}
 
 			if (!passwordEncoder.matches(requestDto.getPassword(), existUser.getPassword())) {
-				throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+				throw new CustomAuthException(ExceptionCode.INVALID_PASSWORD);
 			}
 		}
 	}
