@@ -118,7 +118,7 @@ public class CounselService {
 		User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
 
 		// 상담 조회
-		Counsel counsel = counselRepository.findByUser(user).orElseThrow(()-> new IllegalArgumentException("진행중인 상담이 없습니다."));
+		Counsel counsel = counselRepository.findByUser(user).orElseThrow(()-> new IllegalArgumentException("상담이 없습니다."));
 
 		return CounselResponse.from(counsel);
 	}

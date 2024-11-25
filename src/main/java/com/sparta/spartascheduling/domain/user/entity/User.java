@@ -37,11 +37,12 @@ public class User extends Timestamped {
 	private DeleteStatus status;
 
 	@Builder
-	private User(String email, String password, String username) {
+	public User(String email, String password, String username) {
 		this.email = email;
 		this.password = password;
 		this.username = username;
 		this.deletedAt = null;
 		this.status = DeleteStatus.ACTIVE;
 	}
+
 }

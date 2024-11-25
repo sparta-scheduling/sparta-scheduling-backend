@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -33,4 +34,16 @@ public class Tutor extends Timestamped {
 	private LocalTime counselStart;
 
 	private LocalTime counselEnd;
+
+	@Builder
+	public Tutor(Long id, String username, String email, String password, Long campId, LocalTime counselStart,
+		LocalTime counselEnd) {
+		this.id = id;
+		this.username = username;
+		this.email = email;
+		this.password = password;
+		this.campId = campId;
+		this.counselStart = counselStart;
+		this.counselEnd = counselEnd;
+	}
 }
