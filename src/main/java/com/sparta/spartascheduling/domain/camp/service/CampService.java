@@ -8,6 +8,7 @@ import com.sparta.spartascheduling.domain.camp.dto.CampRequestDto;
 import com.sparta.spartascheduling.domain.camp.dto.CampResponseDto;
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
 import com.sparta.spartascheduling.domain.camp.repository.CampRepository;
+import com.sparta.spartascheduling.domain.manager.entity.Manager;
 import com.sparta.spartascheduling.domain.manager.repository.ManagerRepository;
 import com.sparta.spartascheduling.domain.user.entity.User;
 import com.sparta.spartascheduling.domain.user.repository.UserRepository;
