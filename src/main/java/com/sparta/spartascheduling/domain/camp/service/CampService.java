@@ -36,7 +36,7 @@ public class CampService {
 
 		// 매니저 조회
 		Manager manager = managerRepository.findByEmail(authUser.getEmail())
-			.orElseThrow(() -> new IllegalArgumentException("ADMIN 권한은 매니저로 등록된 사용자만 부여됩니다."));
+			.orElseThrow(() -> new IllegalArgumentException("매니저를 찾을 수 없습니다."));
 
 		// 중복 캠프 확인
 		if (campRepository.existsByNameAndOpenDate(requestDto.getName(), requestDto.getOpenDate())) {
