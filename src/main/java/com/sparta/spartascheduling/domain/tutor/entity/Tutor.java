@@ -1,6 +1,7 @@
 package com.sparta.spartascheduling.domain.tutor.entity;
 
 import java.sql.Time;
+import java.time.LocalTime;
 
 import com.sparta.spartascheduling.common.entity.Timestamped;
 
@@ -29,7 +30,7 @@ public class Tutor extends Timestamped {
 
 	private Long campId;
 
-	private Time counselStart;
+	private LocalTime counselStart;
 
-	private Time counselEnd;
+	private LocalTime counselEnd;
 }
