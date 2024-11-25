@@ -27,17 +27,22 @@ public enum ExceptionCode {
 	NOT_FOUND_USER(HttpStatus.NOT_FOUND, "존재하지 않는 학생입니다."),
 
 	// 캠프 관련 예외 (camp)
-	EXCEEDED_CAMP_CAPACITY(HttpStatus.BAD_REQUEST, "이미 남은인원이 0입니다."),
+	EXCEEDED_CAMP_CAPACITY(HttpStatus.BAD_REQUEST, "정원이 초과되어서 캠프를 신청할 수 없습니다."),
 
 	NOT_FOUND_CAMP(HttpStatus.NOT_FOUND, "캠프가 존재하지 않습니다."),
 
-	ALREADY_JOIN_CAMP(HttpStatus.BAD_REQUEST, "정원이 초과되어서 캠프를 신청할 수 없습니다."),
+	ALREADY_JOIN_CAMP(HttpStatus.BAD_REQUEST, "이미 소속된 캠프는 신청할 수 없습니다."),
+
+	ALREADY_EXIST_CAMP(HttpStatus.BAD_REQUEST, "같은 이름과 시작일의 캠프가 이미 존재합니다."),
 
 	// 회원과 캠프 관계 관련 예외 (userCamp)
 
 	// 상담 관련 예외 (counsel)
 
-	// 매니저 관련 예외 (manager)
+	// 매니저 (ADMIN) 관련 예외 (manager)
+	NO_AUTHORIZATION_ADMIN(HttpStatus.FORBIDDEN, "ADMIN 권한이 필요합니다."),
+
+	NOT_FOUND_MANAGER(HttpStatus.NOT_FOUND, "매니저를 찾을 수 없습니다."),
 
 	// 튜터 관련 예외 (tutor)
 	TUTOR_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 튜터입니다.");
