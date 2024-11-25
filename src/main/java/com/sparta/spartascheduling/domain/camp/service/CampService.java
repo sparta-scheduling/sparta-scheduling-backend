@@ -22,22 +22,27 @@ import lombok.RequiredArgsConstructor;
 public class CampService {
 
 	private final CampRepository campRepository;
-	private final UserCampRepository userCampRepository;
-	private final UserRepository userRepository;
 	private final ManagerRepository managerRepository;
+	private final UserRepository userRepository;
+	private final UserCampRepository userCampRepository;
 
+	// 캠프 생성
+	@Transactional
 	public CampResponseDto createCamp(CampRequestDto requestDto, AuthUser authUser) {
-		// userType 검증
+		// ADMIN 권한 검증
 		if (!"ADMIN".equals(authUser.getUserType())) {
-			throw new IllegalArgumentException("ADMIN 권한이 필요합니다.");
+			throw new IllegalArgumentException("캠프 생성은 ADMIN 권한이 필요합니다.");
 		}
+
 		// 매니저 조회
 		Manager manager = managerRepository.findByEmail(authUser.getEmail())
 			.orElseThrow(() -> new IllegalArgumentException("매니저를 찾을 수 없습니다."));
+
 		// 중복 캠프 확인
 		if (campRepository.existsByNameAndOpenDate(requestDto.getName(), requestDto.getOpenDate())) {
 			throw new IllegalArgumentException("같은 이름과 시작일의 캠프가 이미 존재합니다.");
 		}
+
 		// 캠프 생성 및 저장
 		Camp camp = Camp.createCamp(
 			requestDto.getName(),
@@ -51,26 +56,39 @@ public class CampService {
 		return CampResponseDto.from(savedCamp);
 	}
 
-	@Transactional()
-	public void applyForCamp(Long campId) {
-		Camp camp = campRepository.findById(campId).orElseThrow(() -> new IllegalArgumentException("캠프가 존재하지 않습니다."));
-		User user = userRepository.findById(1L)
-			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학생입니다.")); // 회원 아이디 임시
+	// 캠프 단건 조회
+	@Transactional(readOnly = true)
+	public CampResponseDto getCampById(Long campId) {
+		// 캠프 조회
+		Camp camp = campRepository.findById(campId)
+			.orElseThrow(() -> new IllegalArgumentException("해당 캠프를 찾을 수 없습니다."));
 
-		UserCamp userCampCheck = userCampRepository.findByUserId(1L); // 회원 아이디 임시
-		if (userCampCheck != null && campId == userCampCheck.getCamp().getId()) {
+		// 조회된 camp 엔티티를 기반으로 DTO 생성 및 반환
+		return CampResponseDto.from(camp);
+	}
+
+	// 캠프 신청 - 정원님 담당 파트
+	@Transactional
+	public void applyForCamp(Long campId) {
+		Camp camp = campRepository.findById(campId)
+			.orElseThrow(() -> new IllegalArgumentException("캠프가 존재하지 않습니다."));
+		User user = userRepository.findById(1L) // 회원 아이디 임시 처리
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학생입니다."));
+
+		UserCamp userCampCheck = userCampRepository.findByUserId(1L); // 회원 아이디 임시 처리
+		if (userCampCheck != null && campId.equals(userCampCheck.getCamp().getId())) {
 			throw new IllegalArgumentException("이미 소속된 캠프는 신청할 수 없습니다.");
 		}
 
-		if (userCampCheck != null && userCampCheck.getCamp().getRemainCount() <= 0) {
+		if (camp.getRemainCount() <= 0) {
 			throw new IllegalArgumentException("정원이 초과되어서 캠프를 신청할 수 없습니다.");
 		}
 
-		// camp 엔티티에서 캠프신청될때 남은인원 -1 메서드 실행
+		// 캠프 신청 시 남은 인원 감소
 		camp.decreaseRemainCount();
-		campRepository.save(camp); // camp 테이블에 업데이트 진행
+		campRepository.save(camp);
 
-		// 캠프 등록
+		// 캠프와 사용자 등록
 		UserCamp userCamp = UserCamp.of(user, camp);
 		userCampRepository.save(userCamp);
 	}
