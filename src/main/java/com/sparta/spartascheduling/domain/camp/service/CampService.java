@@ -1,11 +1,9 @@
 package com.sparta.spartascheduling.domain.camp.service;
 
-import com.sparta.spartascheduling.common.dto.AuthUser;
-
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sparta.spartascheduling.common.dto.AuthUser;
 import com.sparta.spartascheduling.domain.camp.dto.CampRequestDto;
 import com.sparta.spartascheduling.domain.camp.dto.CampResponseDto;
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
@@ -18,8 +16,6 @@ import com.sparta.spartascheduling.domain.userCamp.entity.UserCamp;
 import com.sparta.spartascheduling.domain.userCamp.repository.UserCampRepository;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

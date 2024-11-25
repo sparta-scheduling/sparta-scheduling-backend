@@ -1,11 +1,10 @@
 package com.sparta.spartascheduling.domain.camp.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.sparta.spartascheduling.common.annotation.Auth;
 import com.sparta.spartascheduling.common.dto.AuthUser;
@@ -14,9 +13,6 @@ import com.sparta.spartascheduling.domain.camp.dto.CampResponseDto;
 import com.sparta.spartascheduling.domain.camp.service.CampService;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
