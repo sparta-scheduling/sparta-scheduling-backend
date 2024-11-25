@@ -1,4 +1,6 @@
 package com.sparta.spartascheduling.domain.camp.service;
+import com.sparta.spartascheduling.domain.camp.entity.Camp;
+import com.sparta.spartascheduling.domain.camp.repository.CampRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,9 @@ import com.sparta.spartascheduling.domain.user.entity.User;
 import com.sparta.spartascheduling.domain.user.repository.UserRepository;
 import com.sparta.spartascheduling.domain.userCamp.entity.UserCamp;
 import com.sparta.spartascheduling.domain.userCamp.repository.UserCampRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
