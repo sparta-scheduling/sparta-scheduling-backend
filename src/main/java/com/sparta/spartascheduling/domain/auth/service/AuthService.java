@@ -19,6 +19,7 @@ import com.sparta.spartascheduling.exception.customException.TutorException;
 import com.sparta.spartascheduling.exception.customException.UserException;
 import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +32,7 @@ public class AuthService {
 	private final ManagerRepository managerRepository;
 	private final TutorRepository tutorRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtUtil jwtUtil;
 
 	public SignupResponseDto signup(SignupRequestDto requestDto) {
 
@@ -66,7 +68,7 @@ public class AuthService {
 		return new SignupResponseDto(savedUser.getId(), savedUser.getEmail(), savedUser.getUsername());
 	}
 
-	public void signin(SigninRequestDto requestDto) {
+	public void signin(SigninRequestDto requestDto, HttpServletResponse response) {
 		if (requestDto.getUserType().equals("ADMIN")) {
 			Manager existManager = managerRepository.findByEmail(requestDto.getEmail()).orElseThrow(
 				() -> new ManagerException(ExceptionCode.NOT_FOUND_MANAGER)
@@ -76,6 +78,9 @@ public class AuthService {
 				throw new CustomAuthException(ExceptionCode.INVALID_PASSWORD);
 			}
 
+			String tokenValue = jwtUtil.createToken(existManager.getId(), existManager.getEmail(), existManager.getUsername(), "ADMIN");
+			response.setHeader("Authorization", tokenValue);
+
 		} else if (requestDto.getUserType().equals("TUTOR")) {
 			Tutor existTutor = tutorRepository.findByEmail(requestDto.getEmail()).orElseThrow(
 				() -> new TutorException(ExceptionCode.NOT_FOUND_TUTOR)
@@ -84,6 +89,9 @@ public class AuthService {
 			if (!passwordEncoder.matches(requestDto.getPassword(), existTutor.getPassword())) {
 				throw new CustomAuthException(ExceptionCode.INVALID_PASSWORD);
 			}
+
+			String tokenValue = jwtUtil.createToken(existTutor.getId(), existTutor.getEmail(), existTutor.getUsername(), "TUTOR");
+			response.setHeader("Authorization", tokenValue);
 
 		} else {
 			User existUser = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(
@@ -97,6 +105,9 @@ public class AuthService {
 			if (!passwordEncoder.matches(requestDto.getPassword(), existUser.getPassword())) {
 				throw new CustomAuthException(ExceptionCode.INVALID_PASSWORD);
 			}
+
+			String tokenValue = jwtUtil.createToken(existUser.getId(), existUser.getEmail(), existUser.getUsername(), "USER");
+			response.setHeader("Authorization", tokenValue);
 		}
 	}
 }

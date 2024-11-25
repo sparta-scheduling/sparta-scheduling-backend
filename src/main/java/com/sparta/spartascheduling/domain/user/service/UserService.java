@@ -1,9 +1,9 @@
 package com.sparta.spartascheduling.domain.user.service;
 
-import org.springframework.stereotype.Service;
 
 import com.sparta.spartascheduling.common.dto.AuthUser;
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
+import com.sparta.spartascheduling.domain.camp.repository.CampRepository;
 import com.sparta.spartascheduling.domain.user.dto.UserMypageDto;
 import com.sparta.spartascheduling.domain.user.entity.User;
 import com.sparta.spartascheduling.domain.user.enums.DeleteStatus;
@@ -14,19 +14,21 @@ import com.sparta.spartascheduling.exception.customException.CustomAuthException
 import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-	private final UserCampRepository userCampRepository;
-	private final UserRepository userRepository;
+    private final UserCampRepository userCampRepository;
+    private final UserRepository userRepository;
 
-	public UserMypageDto getMypage(AuthUser authUser) {
-		UserCamp userCamp = userCampRepository.findByUserId(authUser.getId());
-		Camp camp = userCamp.getCamp();
-		return new UserMypageDto(camp.getName());
-	}
+
+    public UserMypageDto getMypage(AuthUser authUser) {
+        UserCamp userCamp = userCampRepository.findByUserId(authUser.getId());
+        Camp camp = userCamp.getCamp();
+        return new UserMypageDto(camp.getName());
+    }
 
 	public void deleteUser(AuthUser authUser, Long userId) {
 		if ((!authUser.getUserType().equals("ADMIN")) || !(authUser.getUserType().equals("USER")
@@ -42,6 +44,6 @@ public class UserService {
 			throw new CustomAuthException(ExceptionCode.USER_WITHDRAWN);
 		}
 
-		userRepository.delete(existUser);
-	}
+        userRepository.delete(existUser);
+    }
 }
