@@ -2,6 +2,7 @@ package com.sparta.spartascheduling.domain.auth.service;
 
 import org.springframework.stereotype.Service;
 
+import com.sparta.spartascheduling.common.config.JwtUtil;
 import com.sparta.spartascheduling.common.config.PasswordEncoder;
 import com.sparta.spartascheduling.domain.auth.dto.request.SigninRequestDto;
 import com.sparta.spartascheduling.domain.auth.dto.request.SignupRequestDto;
@@ -78,7 +79,8 @@ public class AuthService {
 				throw new CustomAuthException(ExceptionCode.INVALID_PASSWORD);
 			}
 
-			String tokenValue = jwtUtil.createToken(existManager.getId(), existManager.getEmail(), existManager.getUsername(), "ADMIN");
+			String tokenValue = jwtUtil.createToken(existManager.getId(), existManager.getEmail(),
+				existManager.getUsername(), "ADMIN");
 			response.setHeader("Authorization", tokenValue);
 
 		} else if (requestDto.getUserType().equals("TUTOR")) {
@@ -90,7 +92,8 @@ public class AuthService {
 				throw new CustomAuthException(ExceptionCode.INVALID_PASSWORD);
 			}
 
-			String tokenValue = jwtUtil.createToken(existTutor.getId(), existTutor.getEmail(), existTutor.getUsername(), "TUTOR");
+			String tokenValue = jwtUtil.createToken(existTutor.getId(), existTutor.getEmail(), existTutor.getUsername(),
+				"TUTOR");
 			response.setHeader("Authorization", tokenValue);
 
 		} else {
@@ -106,7 +109,8 @@ public class AuthService {
 				throw new CustomAuthException(ExceptionCode.INVALID_PASSWORD);
 			}
 
-			String tokenValue = jwtUtil.createToken(existUser.getId(), existUser.getEmail(), existUser.getUsername(), "USER");
+			String tokenValue = jwtUtil.createToken(existUser.getId(), existUser.getEmail(), existUser.getUsername(),
+				"USER");
 			response.setHeader("Authorization", tokenValue);
 		}
 	}
