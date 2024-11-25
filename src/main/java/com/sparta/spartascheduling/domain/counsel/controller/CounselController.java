@@ -35,4 +35,10 @@ public class CounselController {
 		List<CounselResponse> response = counselService.getCounselFromTutor(authUser);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+
+	@GetMapping("/counsels")
+	public ResponseEntity<CounselResponse> getCounselFromUser(@Auth AuthUser authUser) {
+		CounselResponse response = counselService.getCounselFromUser(authUser);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
 }
