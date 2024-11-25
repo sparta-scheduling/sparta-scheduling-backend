@@ -67,7 +67,7 @@ public class CampService {
 		List<String> campStatuses = campRepository.findCampStatusesByIds(campIds);
 
 		// 캠프 상태 중 하나라도 "COMPLETED"가 아닌 경우 예외 발생
-		if (campStatuses.contains("COMPLETED")) {
+		if (!campStatuses.contains("COMPLETED")) {
 			throw new IllegalArgumentException("현재 다른 캠프를 이미 참여중입니다.");
 		}
 
