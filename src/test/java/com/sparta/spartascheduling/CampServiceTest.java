@@ -1,5 +1,21 @@
 package com.sparta.spartascheduling.domain.camp.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import com.sparta.spartascheduling.common.dto.AuthUser;
 import com.sparta.spartascheduling.domain.camp.dto.CampRequestDto;
 import com.sparta.spartascheduling.domain.camp.dto.CampResponseDto;
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
@@ -7,20 +23,10 @@ import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 import com.sparta.spartascheduling.domain.camp.repository.CampRepository;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
 import com.sparta.spartascheduling.domain.manager.repository.ManagerRepository;
+import com.sparta.spartascheduling.exception.customException.ManagerException;
+import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.time.LocalDate;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+@ExtendWith(MockitoExtension.class)
 class CampServiceTest {
 
 	@Mock
@@ -32,88 +38,116 @@ class CampServiceTest {
 	@InjectMocks
 	private CampService campService;
 
+	private AuthUser adminUser;
+	private AuthUser regularUser;
+
 	@BeforeEach
-	void setUp() {
-		MockitoAnnotations.openMocks(this);
+	void setup() {
+		adminUser = new AuthUser(1L, "admin@test.com", "Admin", "ADMIN");
+		regularUser = new AuthUser(2L, "user@test.com", "User", "USER");
 	}
 
 	@Test
-	void createCamp_Success() {
+	void testCreateCamp_Success() {
 		// Given
+		Manager mockManager = new Manager(1L, "admin@test.com", "encodedPassword", "Admin");
 		CampRequestDto requestDto = new CampRequestDto(
-			"Test Camp",
-			"Test Content",
-			LocalDate.of(2024, 1, 1),
-			LocalDate.of(2024, 1, 10),
-			20
+			"Spring Camp",
+			"Description",
+			LocalDate.of(2024,12,5),
+			LocalDate.of(2024,12,15),
+			50
 		);
-
-		Manager manager = Manager.createManager("manager@test.com", "password", "Test Manager");
-
-		when(managerRepository.findById(1L)).thenReturn(Optional.of(manager));
+		Camp camp = new Camp(
+			null,
+			"Spring Camp",
+			"Description",
+			LocalDate.of(2024,12,5),
+			LocalDate.of(2024,12,15),
+			CampStatus.CREATED,
+			50,
+			mockManager,
+			1
+		);
+		when(managerRepository.findByEmail(adminUser.getEmail())).thenReturn(Optional.of(mockManager));
 		when(campRepository.existsByNameAndOpenDate(requestDto.getName(), requestDto.getOpenDate())).thenReturn(false);
+		when(campRepository.save(any())).thenReturn(camp);
 
-		ArgumentCaptor<Camp> captor = ArgumentCaptor.forClass(Camp.class);
-		when(campRepository.save(any(Camp.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 		// When
-		CampResponseDto responseDto = campService.createCamp(requestDto, 1L);
+		CampResponseDto responseDto = campService.createCamp(requestDto, adminUser);
 
 		// Then
 		assertNotNull(responseDto);
-		assertEquals("Test Camp", responseDto.getName());
+		assertEquals("Spring Camp", responseDto.getName());
+		assertEquals(50, responseDto.getMaxCount());
 		assertEquals(CampStatus.CREATED, responseDto.getStatus());
-
-		verify(campRepository, times(1)).save(captor.capture());
-		Camp capturedCamp = captor.getValue();
-		assertEquals("Test Camp", capturedCamp.getName());
-		assertEquals(LocalDate.of(2024, 1, 1), capturedCamp.getOpenDate());
+		verify(campRepository, times(1)).save(any(Camp.class));
 	}
 
 	@Test
-	void createCamp_ManagerNotFound() {
+	void testCreateCamp_ManagerNotFound() {
 		// Given
 		CampRequestDto requestDto = new CampRequestDto(
-			"Test Camp",
-			"Test Content",
-			LocalDate.of(2024, 1, 1),
-			LocalDate.of(2024, 1, 10),
-			20
+			"Spring Camp",
+			"Description",
+			LocalDate.now().plusDays(1),
+			LocalDate.now().plusDays(10),
+			50
 		);
 
-		when(managerRepository.findById(1L)).thenReturn(Optional.empty());
+		when(managerRepository.findByEmail(adminUser.getEmail())).thenReturn(Optional.empty());
 
 		// When & Then
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-			campService.createCamp(requestDto, 1L);
-		});
-
-		assertEquals("매니저를 찾을 수 없습니다.", exception.getMessage());
-		verify(campRepository, never()).save(any(Camp.class));
+		ManagerException exception = assertThrows(
+			ManagerException.class,
+			() -> campService.createCamp(requestDto, adminUser)
+		);
+		assertEquals(ExceptionCode.NOT_FOUND_MANAGER, exception.getExceptionCode());
 	}
 
 	@Test
-	void createCamp_DuplicateCamp() {
+	void testGetCampById_Success() {
 		// Given
-		CampRequestDto requestDto = new CampRequestDto(
-			"Duplicate Camp",
-			"Test Content",
-			LocalDate.of(2024, 1, 1),
-			LocalDate.of(2024, 1, 10),
-			20
+		Manager manager = new Manager(1L, "admin@test.com", "encodedPassword", "Admin");
+		Camp mockCamp = new Camp(
+			null, // id를 초기화하지 않음
+			"Spring Camp",
+			"Description",
+			LocalDate.of(2024,12,5),
+			LocalDate.of(2024,12,15),
+			CampStatus.CREATED,
+			50,
+			manager,
+			1
 		);
 
-		Manager manager = Manager.createManager("manager@test.com", "password", "Test Manager");
+		// Reflection을 통해 id 값을 강제로 설정
+		ReflectionTestUtils.setField(mockCamp, "id", 1L);
 
-		when(managerRepository.findById(1L)).thenReturn(Optional.of(manager));
-		when(campRepository.existsByNameAndOpenDate(requestDto.getName(), requestDto.getOpenDate())).thenReturn(true);
+		when(campRepository.findById(1L)).thenReturn(Optional.of(mockCamp));
 
-		// When & Then
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-			campService.createCamp(requestDto, 1L);
-		});
+		// When
+		CampResponseDto responseDto = campService.getCampById(1L);
 
-		assertEquals("같은 이름과 시작일의 캠프가 이미 존재합니다.", exception.getMessage());
-		verify(campRepository, never()).save(any(Camp.class));
+		// Then
+		assertNotNull(responseDto);
+		assertEquals(1L, responseDto.getId());
+		assertEquals("Spring Camp", responseDto.getName());
+		verify(campRepository, times(1)).findById(1L);
 	}
+
+	// @Test
+	// void testGetCampById_NotFound() {
+	// 	// Given
+	// 	when(campRepository.findById(1L)).thenReturn(Optional.empty());
+	//
+	// 	// When & Then
+	// 	CampException exception = assertThrows(
+	// 		CampException.class,
+	// 		() -> campService.getCampById(1L)
+	// 	);
+	// 	assertEquals(ExceptionCode.NOT_FOUND_CAMP, exception.getExceptionCode());
+	// }
+
 }

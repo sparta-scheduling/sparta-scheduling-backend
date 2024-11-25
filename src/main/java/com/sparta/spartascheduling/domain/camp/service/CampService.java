@@ -1,5 +1,8 @@
 package com.sparta.spartascheduling.domain.camp.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,9 +76,18 @@ public class CampService {
 		return CampResponseDto.from(camp);
 	}
 
-	// --------------------------------- //
+	// 캠프 리스트 조회
+	@Transactional(readOnly = true)
+	public List<CampResponseDto> getAllCamps() {
+		List<Camp> camps = campRepository.findAllOrderedByStatus();
+
+		return camps.stream()
+			.map(CampResponseDto::from)
+			.collect(Collectors.toList());
+	}
 
 	// [문정원 파트 - 캠프 신청]
+
 	@Transactional()
 	public void applyForCamp(Long campId, AuthUser authUser) {
 		if (!"USER".equals(authUser.getUserType())) {
