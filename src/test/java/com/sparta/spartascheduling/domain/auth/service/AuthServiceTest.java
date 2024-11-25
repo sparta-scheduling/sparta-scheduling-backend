@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.sparta.spartascheduling.common.config.PasswordEncoder;
 import com.sparta.spartascheduling.domain.auth.dto.request.SigninRequestDto;
@@ -21,6 +22,8 @@ import com.sparta.spartascheduling.domain.tutor.repository.TutorRepository;
 import com.sparta.spartascheduling.domain.user.entity.User;
 import com.sparta.spartascheduling.domain.user.enums.DeleteStatus;
 import com.sparta.spartascheduling.domain.user.repository.UserRepository;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 class AuthServiceTest {
 	@Mock
@@ -127,13 +130,14 @@ class AuthServiceTest {
 	public void signin_DataNotFound_ThrowsException() {
 		// Given
 		SigninRequestDto requestDto = new SigninRequestDto("admin@example.com", "password123", "ADMIN");
+		MockHttpServletResponse response = new MockHttpServletResponse();
 
 		when(managerRepository.findByEmail(requestDto.getEmail()))
 			.thenReturn(Optional.empty());
 
 		// When & Then
 		assertThrows(IllegalArgumentException.class,
-			() -> authService.signin(requestDto),
+			() -> authService.signin(requestDto, response),
 			"존재하는 매니저가 없습니다.");
 	}
 
@@ -148,6 +152,7 @@ class AuthServiceTest {
 	public void signin_PasswordMismatch_ThrowsException() {
 		// Given
 		SigninRequestDto requestDto = new SigninRequestDto("user@example.com", "wrongPassword", "USER");
+		MockHttpServletResponse response = new MockHttpServletResponse();
 		User existUser = User.builder()
 			.email("user@example.com")
 			.password("wrongPassword")
@@ -160,7 +165,7 @@ class AuthServiceTest {
 
 		// When & Then
 		assertThrows(IllegalArgumentException.class,
-			() -> authService.signin(requestDto),
+			() -> authService.signin(requestDto, response),
 			"이메일과 비밀번호 조합이 맞지 않습니다.");
 	}
 }
