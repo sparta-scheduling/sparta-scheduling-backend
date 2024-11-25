@@ -46,4 +46,13 @@ public class Tutor extends Timestamped {
 		this.counselStart = counselStart;
 		this.counselEnd = counselEnd;
 	}
+
+	public void setCounselStart(LocalTime counselStart) {
+		this.counselStart = counselStart;
+	}
+
+	public void setCounselEnd(LocalTime counselEnd) {
+		this.counselEnd = counselEnd;
+	}
+
 }

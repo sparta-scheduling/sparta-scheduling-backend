@@ -71,7 +71,9 @@ public enum ExceptionCode {
 	// 튜터 관련 예외 (tutor)
 	NOT_FOUND_TUTOR(HttpStatus.NOT_FOUND, "존재하지 않는 튜터입니다."),
 
-	NO_AUTHORIZATION_TUTOR(HttpStatus.FORBIDDEN, "TUTOR 권한이 필요합니다.");
+	NO_AUTHORIZATION_TUTOR(HttpStatus.FORBIDDEN, "TUTOR 권한이 필요합니다."),
+
+	ALREADY_EXIST_COUNSEL(HttpStatus.BAD_REQUEST, "이미 상담이 존재하여 변경이 어렵습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String message;
