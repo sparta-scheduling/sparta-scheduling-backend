@@ -1,5 +1,7 @@
 package com.sparta.spartascheduling.domain.user.controller;
 
+import com.sparta.spartascheduling.common.annotation.Auth;
+import com.sparta.spartascheduling.common.dto.AuthUser;
 import com.sparta.spartascheduling.domain.user.dto.UserMypageDto;
 import com.sparta.spartascheduling.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;

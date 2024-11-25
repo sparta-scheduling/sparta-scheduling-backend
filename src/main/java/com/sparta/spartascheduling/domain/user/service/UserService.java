@@ -1,6 +1,7 @@
 package com.sparta.spartascheduling.domain.user.service;
 
 
+import com.sparta.spartascheduling.common.dto.AuthUser;
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
 import com.sparta.spartascheduling.domain.camp.repository.CampRepository;
 import com.sparta.spartascheduling.domain.user.dto.UserMypageDto;
@@ -27,7 +28,7 @@ public class UserService {
     }
 
     public void deleteUser(AuthUser authUser, Long userId) {
-        if ((!authUser.getUserType.equals("ADMIN")) || !(authUser.getUserType.equals("USER") && authUser.getUserId == userId)) {
+        if ((!authUser.getUserType().equals("ADMIN")) || !(authUser.getUserType().equals("USER") && authUser.getId() == userId)) {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
 
