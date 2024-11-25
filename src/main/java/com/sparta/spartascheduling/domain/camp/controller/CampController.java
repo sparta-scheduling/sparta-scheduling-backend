@@ -39,6 +39,7 @@ public class CampController {
 		CampResponseDto responseDto = campService.getCampById(campId);
 		return ResponseEntity.ok(responseDto);
 	}
+
 	// 캠프 리스트 조회 API
 	@GetMapping("/camps")
 	public ResponseEntity<List<CampResponseDto>> getAllCamps() {
@@ -48,7 +49,7 @@ public class CampController {
 
 	// 캠프 신청 - 동시성 제어 할 곳
 	@PostMapping("/camps/{campId}")
-	public void applyForCamp(@PathVariable Long campId) {
-		campService.applyForCamp(campId);
+	public void applyForCamp(@PathVariable Long campId, @Auth AuthUser authUser) {
+		campService.applyForCamp(campId, authUser);
 	}
 }

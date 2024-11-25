@@ -32,16 +32,6 @@ public class JwtFilter implements Filter {
 
 		if (StringUtils.hasText(url) && (url.startsWith("/auth"))) {
 			// 회원가입, 로그인 관련 API는 인증 필요없이 요청 진행
-			if (url.startsWith("/auth/login")) {
-				Long userId = (Long) httpRequest.getAttribute("userId");
-				String email = (String) httpRequest.getAttribute("email");
-				String username = (String) httpRequest.getAttribute("username");
-				String userType = (String) httpRequest.getAttribute("userType");
-
-				String newJwt = jwtUtil.createToken(userId, email, username, userType);
-				httpResponse.setHeader("Authorization", newJwt);
-			}
-
 			chain.doFilter(request, response);    // 다음 Filter 로 이동
 			return;
 		}

@@ -7,6 +7,8 @@ import com.sparta.spartascheduling.domain.user.enums.DeleteStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,6 +20,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(name = "users")
+@NoArgsConstructor
 public class User extends Timestamped {
 
 	@Id
@@ -33,14 +36,16 @@ public class User extends Timestamped {
 
 	private LocalDateTime deletedAt;
 
+	@Enumerated(EnumType.STRING)
 	private DeleteStatus status;
 
 	@Builder
-	private User(String email, String password, String username) {
+	public User(String email, String password, String username) {
 		this.email = email;
 		this.password = password;
 		this.username = username;
 		this.deletedAt = null;
 		this.status = DeleteStatus.ACTIVE;
 	}
+
 }
