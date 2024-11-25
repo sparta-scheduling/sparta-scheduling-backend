@@ -8,11 +8,7 @@ import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 
 import lombok.Getter;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 @Getter
-
 public class CampResponseDto {
 	private Long id;
 	private String name;
@@ -25,43 +21,22 @@ public class CampResponseDto {
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 
-	private CampResponseDto(Long id, String name, String contents, CampStatus status,
-		LocalDate openDate, LocalDate closeDate, int remainCount, int maxCount,
-		LocalDateTime createdAt, LocalDateTime updatedAt) {
-		this.id = id;
-		this.name = name;
-		this.contents = contents;
-		this.status = status;
-		this.openDate = openDate;
-		this.closeDate = closeDate;
-		this.remainCount = remainCount;
-		this.maxCount = maxCount;
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
+	// 엔티티를 직접 받아서 매핑
+	private CampResponseDto(Camp camp) {
+		this.id = camp.getId();
+		this.name = camp.getName();
+		this.contents = camp.getContents();
+		this.status = camp.getStatus();
+		this.openDate = camp.getOpenDate();
+		this.closeDate = camp.getCloseDate();
+		this.remainCount = camp.getRemainCount();
+		this.maxCount = camp.getMaxCount();
+		this.createdAt = camp.getCreatedAt();
+		this.updatedAt = camp.getModifiedAt();
 	}
 
-	public CampResponseDto(Long id, String name, String contents, CampStatus status, LocalDate openDate,
-		LocalDate closeDate, int maxCount, LocalDateTime createdAt) {
-		this.id = id;
-		this.name = name;
-		this.contents = contents;
-		this.status = status;
-		this.openDate = openDate;
-		this.closeDate = closeDate;
-		this.maxCount = maxCount;
-		this.createdAt = createdAt;
-	}
-
+	// 정적 팩토리 메서드 사용. Camp 엔티티를 받아 DTO 생성
 	public static CampResponseDto from(Camp camp) {
-		return new CampResponseDto(
-			camp.getId(),
-			camp.getName(),
-			camp.getContents(),
-			camp.getStatus(),
-			camp.getOpenDate(),
-			camp.getCloseDate(),
-			camp.getMaxCount(),
-			camp.getCreatedAt()
-		);
+		return new CampResponseDto(camp);
 	}
 }
