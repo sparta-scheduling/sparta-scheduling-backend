@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import com.sparta.spartascheduling.common.entity.Timestamped;
 import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
+import com.sparta.spartascheduling.exception.customException.CampException;
+import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,7 +59,7 @@ public class Camp extends Timestamped {
 	private Manager manager;
 
 	private int remainCount;
-  
+
 	// 정적 팩토리 메서드로 캠프 생성 및 유효성 검사
 	public static Camp createCamp(String name, String contents, LocalDate openDate, LocalDate closeDate, int maxCount,
 		Manager manager) {
@@ -81,17 +83,17 @@ public class Camp extends Timestamped {
 	// 캠프 날짜 유효성 검사 메서드
 	private static void validateCampDates(LocalDate openDate, LocalDate closeDate) {
 		if (openDate.isAfter(closeDate)) {
-			throw new IllegalArgumentException("시작일은 종료일보다 빠르거나 같아야 합니다.");
+			throw new CampException(ExceptionCode.START_DATE_AFTER_END_DATE);
 		}
 		if (openDate.isBefore(LocalDate.now())) {
-			throw new IllegalArgumentException("시작일은 오늘 이후여야 합니다.");
+			throw new CampException(ExceptionCode.START_DATE_BEFORE_TODAY);
 		}
 	}
 
 	// 최대 인원 유효성 검사 메서드
 	private static void validateMaxCount(int maxCount) {
 		if (maxCount <= 0) {
-			throw new IllegalArgumentException("최대 인원은 1명 이상이어야 합니다.");
+			throw new CampException(ExceptionCode.INVALID_MAX_COUNT);
 		}
 	}
 
@@ -111,7 +113,7 @@ public class Camp extends Timestamped {
 	// 캠프신청될때 남은인원 -1
 	public void decreaseRemainCount() {
 		if (remainCount <= 0) {
-			throw new IllegalArgumentException("이미 남은인원이 0입니다.");
+			throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
 		}
 		this.remainCount--;
 	}

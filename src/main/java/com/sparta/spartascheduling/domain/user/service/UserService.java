@@ -10,6 +10,9 @@ import com.sparta.spartascheduling.domain.user.enums.DeleteStatus;
 import com.sparta.spartascheduling.domain.user.repository.UserRepository;
 import com.sparta.spartascheduling.domain.userCamp.entity.UserCamp;
 import com.sparta.spartascheduling.domain.userCamp.repository.UserCampRepository;
+import com.sparta.spartascheduling.exception.customException.CustomAuthException;
+import com.sparta.spartascheduling.exception.enums.ExceptionCode;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,18 +30,19 @@ public class UserService {
         return new UserMypageDto(camp.getName());
     }
 
-    public void deleteUser(AuthUser authUser, Long userId) {
-        if ((!authUser.getUserType().equals("ADMIN")) || !(authUser.getUserType().equals("USER") && authUser.getId() == userId)) {
-            throw new IllegalArgumentException("권한이 없습니다.");
-        }
+	public void deleteUser(AuthUser authUser, Long userId) {
+		if ((!authUser.getUserType().equals("ADMIN")) || !(authUser.getUserType().equals("USER")
+			&& authUser.getId() == userId)) {
+			throw new CustomAuthException(ExceptionCode.NO_AUTHORIZATION_USER);
+		}
 
-        User existUser = userRepository.findById(userId).orElseThrow(
-            () -> new IllegalArgumentException("존재하지 않는 유저입니다.")
-        );
+		User existUser = userRepository.findById(userId).orElseThrow(
+			() -> new CustomAuthException(ExceptionCode.NOT_FOUND_USER)
+		);
 
-        if (existUser.getStatus().equals(DeleteStatus.INACTIVE)) {
-            throw new IllegalArgumentException("이미 삭제된 유저입니다.");
-        }
+		if (existUser.getStatus().equals(DeleteStatus.INACTIVE)) {
+			throw new CustomAuthException(ExceptionCode.USER_WITHDRAWN);
+		}
 
         userRepository.delete(existUser);
     }
