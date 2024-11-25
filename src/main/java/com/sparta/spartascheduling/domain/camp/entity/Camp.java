@@ -57,7 +57,7 @@ public class Camp extends Timestamped {
 	private Manager manager;
 
 	private int remainCount;
-
+  
 	// 정적 팩토리 메서드로 캠프 생성 및 유효성 검사
 	public static Camp createCamp(String name, String contents, LocalDate openDate, LocalDate closeDate, int maxCount,
 		Manager manager) {
