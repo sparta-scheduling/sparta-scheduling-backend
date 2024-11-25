@@ -18,6 +18,11 @@ import com.sparta.spartascheduling.domain.user.entity.User;
 import com.sparta.spartascheduling.domain.user.repository.UserRepository;
 import com.sparta.spartascheduling.domain.userCamp.entity.UserCamp;
 import com.sparta.spartascheduling.domain.userCamp.repository.UserCampRepository;
+import com.sparta.spartascheduling.exception.customException.CampException;
+import com.sparta.spartascheduling.exception.customException.CustomAuthException;
+import com.sparta.spartascheduling.exception.customException.ManagerException;
+import com.sparta.spartascheduling.exception.customException.UserException;
+import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,16 +40,16 @@ public class CampService {
 	public CampResponseDto createCamp(CampRequestDto requestDto, AuthUser authUser) {
 		// ADMIN 권한 검증
 		if (!"ADMIN".equals(authUser.getUserType())) {
-			throw new IllegalArgumentException("캠프 생성은 ADMIN 권한이 필요합니다.");
+			throw new CampException(ExceptionCode.NO_AUTHORIZATION_ADMIN);
 		}
 
 		// 매니저 조회
 		Manager manager = managerRepository.findByEmail(authUser.getEmail())
-			.orElseThrow(() -> new IllegalArgumentException("매니저를 찾을 수 없습니다."));
+			.orElseThrow(() -> new ManagerException(ExceptionCode.NOT_FOUND_MANAGER));
 
 		// 중복 캠프 확인
 		if (campRepository.existsByNameAndOpenDate(requestDto.getName(), requestDto.getOpenDate())) {
-			throw new IllegalArgumentException("같은 이름과 시작일의 캠프가 이미 존재합니다.");
+			throw new CampException(ExceptionCode.ALREADY_EXIST_CAMP);
 		}
 
 		// 캠프 생성 및 저장
@@ -65,7 +70,7 @@ public class CampService {
 	public CampResponseDto getCampById(Long campId) {
 		// 캠프 조회
 		Camp camp = campRepository.findById(campId)
-			.orElseThrow(() -> new IllegalArgumentException("해당 캠프를 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomAuthException(ExceptionCode.NOT_FOUND_CAMP));
 
 		// 조회된 camp 엔티티를 기반으로 DTO 생성 및 반환
 		return CampResponseDto.from(camp);
@@ -82,28 +87,29 @@ public class CampService {
 	}
 
 	// [문정원 파트 - 캠프 신청]
+
 	@Transactional()
 	public void applyForCamp(Long campId, AuthUser authUser) {
 		if (!"USER".equals(authUser.getUserType())) {
-			throw new IllegalArgumentException("학생만 신청할 수 있습니다.");
+			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
 		}
 
-		Camp camp = campRepository.findById(campId).orElseThrow(() -> new IllegalArgumentException("캠프가 존재하지 않습니다."));
+		Camp camp = campRepository.findById(campId).orElseThrow(() -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
 		User user = userRepository.findById(authUser.getId())
-			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학생입니다."));
+			.orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
 		UserCamp userCampCheck = userCampRepository.findByUserId(authUser.getId());
 
 		boolean campCheck = userCampRepository.existsActiveCampForUser(authUser.getId(), CampStatus.CLOSED);
 		if (campCheck) {
-			throw new IllegalArgumentException("현재 참여중인 캠프가 있어서 신청할 수 없습니다");
+			throw new CampException(ExceptionCode.ALREADY_JOIN_CAMP);
 		}
 
 		if (userCampCheck != null && campId == userCampCheck.getCamp().getId()) {
-			throw new IllegalArgumentException("중복된 캠프입니다.(신청한 이력이 존재하는 캠프입니다.)");
+			throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
 		}
 
 		if (userCampCheck != null && userCampCheck.getCamp().getRemainCount() <= 0) {
-			throw new IllegalArgumentException("정원이 초과되어서 캠프를 신청할 수 없습니다.");
+			throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
 		}
 
 		// 캠프 신청 시 남은 인원 감소

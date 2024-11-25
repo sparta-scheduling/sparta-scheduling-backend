@@ -8,14 +8,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.sparta.spartascheduling.exception.customException.CustomAuthException;
+import com.sparta.spartascheduling.exception.enums.ExceptionCode;
+
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,7 +37,7 @@ public class JwtUtil {
 	@PostConstruct
 	public void init() {
 		if (!StringUtils.hasText(secretKey)) {
-			throw new IllegalArgumentException("JWT secret key is mandatory");
+			throw new CustomAuthException(ExceptionCode.SECRET_KEY_NOT_FOUND);
 		}
 		byte[] bytes = Base64.getDecoder().decode(secretKey);
 		key = Keys.hmacShaKeyFor(bytes);
@@ -59,7 +62,7 @@ public class JwtUtil {
 		if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
 			return tokenValue.substring(7);
 		}
-		throw new IllegalArgumentException("Not Found Token");
+		throw new CustomAuthException(ExceptionCode.TOKEN_NOT_FOUND);
 	}
 
 	public Claims extractClaims(String token) {
