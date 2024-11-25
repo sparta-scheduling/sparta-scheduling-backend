@@ -1,5 +1,6 @@
 package com.sparta.spartascheduling.domain.auth.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -29,9 +30,10 @@ public class AuthController {
 
     @PostMapping("/auth/signin")
     public ResponseEntity<Void> signin(
-        @Valid @RequestBody SigninRequestDto signinRequestDto
+        @Valid @RequestBody SigninRequestDto signinRequestDto,
+        HttpServletResponse response
     ) {
-        authService.signin(signinRequestDto);
+        authService.signin(signinRequestDto, response);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
