@@ -57,7 +57,7 @@ public class Camp extends Timestamped {
 	private Manager manager;
 
 	private int remainCount;
-
+  
 	// 정적 팩토리 메서드로 캠프 생성 및 유효성 검사
 	public static Camp createCamp(String name, String contents, LocalDate openDate, LocalDate closeDate, int maxCount,
 		Manager manager) {
@@ -83,7 +83,9 @@ public class Camp extends Timestamped {
 		if (openDate.isAfter(closeDate)) {
 			throw new IllegalArgumentException("시작일은 종료일보다 빠르거나 같아야 합니다.");
 		}
-		// 시작일이 과거여도 캠프를 생성할 수 있도록 검증 제거
+		if (openDate.isBefore(LocalDate.now())) {
+			throw new IllegalArgumentException("시작일은 오늘 이후여야 합니다.");
+		}
 	}
 
 	// 최대 인원 유효성 검사 메서드

@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(name = "users")
+@NoArgsConstructor
 public class User extends Timestamped {
 
 	@Id
