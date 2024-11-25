@@ -106,4 +106,20 @@ public class CounselService {
 			.map(CounselResponse::from)
 			.toList();
 	}
+
+	public CounselResponse getCounselFromUser(AuthUser authUser) {
+		if(!"USER".equals(authUser.getUserType())){
+			throw new IllegalArgumentException("학생만 접근이 가능합니다.");
+		}
+
+		Long userId = authUser.getId();
+
+		// 유저 확인
+		User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("학생을 찾을 수 없습니다."));
+
+		// 상담 조회
+		Counsel counsel = counselRepository.findByUser(user).orElseThrow(()-> new IllegalArgumentException("상담이 없습니다."));
+
+		return CounselResponse.from(counsel);
+	}
 }
