@@ -43,6 +43,24 @@ public class UserCamp extends Timestamped {
 		return new UserCamp(user, camp);
 	}
 
+	public static class Builder {
+		private User user;
+		private Camp camp;
 
+		// Setters for user and camp
+		public Builder user(User user) {
+			this.user = user;
+			return this;
+		}
+
+		public Builder camp(Camp camp) {
+			this.camp = camp;
+			return this;
+		}
+
+		public UserCamp build() {
+			return new UserCamp(user, camp);
+		}
+	}
 
 }

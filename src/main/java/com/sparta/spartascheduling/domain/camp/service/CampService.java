@@ -1,8 +1,8 @@
 package com.sparta.spartascheduling.domain.camp.service;
-
+import com.sparta.spartascheduling.common.dto.AuthUser;
+import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,7 +89,7 @@ public class CampService {
 	// [문정원 파트 - 캠프 신청]
 
 	@Transactional()
-	public void applyForCamp(Long campId, AuthUser authUser) {
+	public UserCamp applyForCamp(Long campId, AuthUser authUser) {
 		if (!"USER".equals(authUser.getUserType())) {
 			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
 		}
@@ -119,5 +119,6 @@ public class CampService {
 		// 캠프신청 등록
 		UserCamp userCamp = UserCamp.of(user, camp);
 		userCampRepository.save(userCamp);
+		return userCamp;
 	}
 }
