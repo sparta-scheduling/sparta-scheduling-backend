@@ -1,8 +1,8 @@
 package com.sparta.spartascheduling.domain.camp.service;
-import com.sparta.spartascheduling.common.dto.AuthUser;
-import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
+
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,7 +10,6 @@ import com.sparta.spartascheduling.common.dto.AuthUser;
 import com.sparta.spartascheduling.domain.camp.dto.CampRequestDto;
 import com.sparta.spartascheduling.domain.camp.dto.CampResponseDto;
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
-import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 import com.sparta.spartascheduling.domain.camp.repository.CampRepository;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
 import com.sparta.spartascheduling.domain.manager.repository.ManagerRepository;
@@ -19,7 +18,6 @@ import com.sparta.spartascheduling.domain.user.repository.UserRepository;
 import com.sparta.spartascheduling.domain.userCamp.entity.UserCamp;
 import com.sparta.spartascheduling.domain.userCamp.repository.UserCampRepository;
 import com.sparta.spartascheduling.exception.customException.CampException;
-import com.sparta.spartascheduling.exception.customException.CustomAuthException;
 import com.sparta.spartascheduling.exception.customException.ManagerException;
 import com.sparta.spartascheduling.exception.customException.UserException;
 import com.sparta.spartascheduling.exception.enums.ExceptionCode;
@@ -70,7 +68,7 @@ public class CampService {
 	public CampResponseDto getCampById(Long campId) {
 		// 캠프 조회
 		Camp camp = campRepository.findById(campId)
-			.orElseThrow(() -> new CustomAuthException(ExceptionCode.NOT_FOUND_CAMP));
+			.orElseThrow(() -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
 
 		// 조회된 camp 엔티티를 기반으로 DTO 생성 및 반환
 		return CampResponseDto.from(camp);
@@ -79,6 +77,7 @@ public class CampService {
 	// 캠프 리스트 조회
 	@Transactional(readOnly = true)
 	public List<CampResponseDto> getAllCamps() {
+		// 상태별 우선순위를 적용하여 캠프 리스트를 반환
 		List<Camp> camps = campRepository.findAllOrderedByStatus();
 
 		return camps.stream()
@@ -86,39 +85,39 @@ public class CampService {
 			.collect(Collectors.toList());
 	}
 
-	// [문정원 파트 - 캠프 신청]
-
-	@Transactional()
+	// 캠프 신청 - [문정원 파트]
+	@Transactional
 	public UserCamp applyForCamp(Long campId, AuthUser authUser) {
+		// USER 권한 확인
 		if (!"USER".equals(authUser.getUserType())) {
 			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
 		}
 
-		Camp camp = campRepository.findById(campId).orElseThrow(() -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
-		User user = userRepository.findById(authUser.getId())
-			.orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
-		UserCamp userCampCheck = userCampRepository.findByUserId(authUser.getId());
+		// 비관적 락을 사용하여 캠프 조회
+		Camp camp = campRepository.findByIdWithLock(campId)
+			.orElseThrow(() -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
 
-		boolean campCheck = userCampRepository.existsActiveCampForUser(authUser.getId(), CampStatus.CLOSED);
-		if (campCheck) {
-			throw new CampException(ExceptionCode.ALREADY_JOIN_CAMP);
-		}
-
-		if (userCampCheck != null && campId == userCampCheck.getCamp().getId()) {
-			throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
-		}
-
-		if (userCampCheck != null && userCampCheck.getCamp().getRemainCount() <= 0) {
+		// 남은 인원 확인
+		if (camp.getRemainCount() <= 0) {
 			throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
 		}
 
-		// 캠프 신청 시 남은 인원 감소
+		// 중복 신청 확인 추가
+		boolean alreadyApplied = userCampRepository.existsByUserIdAndCampId(authUser.getId(), campId);
+		if (alreadyApplied) {
+			throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
+		}
+
+		// 유저 조회
+		User user = userRepository.findById(authUser.getId())
+			.orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
+
+		// 남은 인원 감소
 		camp.decreaseRemainCount();
 		campRepository.save(camp);
 
-		// 캠프신청 등록
+		// 유저-캠프 관계 등록
 		UserCamp userCamp = UserCamp.of(user, camp);
-		userCampRepository.save(userCamp);
-		return userCamp;
+		return userCampRepository.save(userCamp);
 	}
 }

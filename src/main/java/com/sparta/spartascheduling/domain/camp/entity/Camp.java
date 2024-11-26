@@ -1,30 +1,19 @@
 package com.sparta.spartascheduling.domain.camp.entity;
 
-import java.time.LocalDate;
-
 import com.sparta.spartascheduling.common.entity.Timestamped;
 import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
 import com.sparta.spartascheduling.exception.customException.CampException;
 import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Getter
 @Entity
@@ -35,11 +24,13 @@ import lombok.NoArgsConstructor;
 	@UniqueConstraint(columnNames = {"name", "open_date"})
 })
 public class Camp extends Timestamped {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	private String name;
+
 	private String contents;
 
 	@Column(name = "open_date", nullable = false)
@@ -54,17 +45,18 @@ public class Camp extends Timestamped {
 	@Column(name = "max_count", nullable = false)
 	private int maxCount;
 
+	@Column(name = "remain_count", nullable = false)
+	private int remainCount;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "manager_id", nullable = false)
 	private Manager manager;
 
-	private int remainCount;
-
 	// 정적 팩토리 메서드로 캠프 생성 및 유효성 검사
 	public static Camp createCamp(String name, String contents, LocalDate openDate, LocalDate closeDate, int maxCount,
 		Manager manager) {
-		validateCampDates(openDate, closeDate);
-		validateMaxCount(maxCount);
+		validateCampDates(openDate, closeDate); // 날짜 유효성 검사
+		validateMaxCount(maxCount); // 최대 인원 유효성 검사
 
 		Camp camp = Camp.builder()
 			.name(name)
@@ -72,15 +64,16 @@ public class Camp extends Timestamped {
 			.openDate(openDate)
 			.closeDate(closeDate)
 			.maxCount(maxCount)
+			.remainCount(maxCount) // 생성 시 remainCount는 maxCount로 초기화
 			.manager(manager)
-			.status(CampStatus.CREATED)
+			.status(CampStatus.CREATED) // 초기 상태는 CREATED
 			.build();
 
-		camp.updateStatus();
+		camp.updateStatus(); // 상태 업데이트
 		return camp;
 	}
 
-	// 캠프 날짜 유효성 검사 메서드
+	// 캠프 날짜 유효성 검사
 	private static void validateCampDates(LocalDate openDate, LocalDate closeDate) {
 		if (openDate.isAfter(closeDate)) {
 			throw new CampException(ExceptionCode.START_DATE_AFTER_END_DATE);
@@ -90,7 +83,7 @@ public class Camp extends Timestamped {
 		}
 	}
 
-	// 최대 인원 유효성 검사 메서드
+	// 최대 인원 유효성 검사
 	private static void validateMaxCount(int maxCount) {
 		if (maxCount <= 0) {
 			throw new CampException(ExceptionCode.INVALID_MAX_COUNT);
@@ -107,14 +100,16 @@ public class Camp extends Timestamped {
 			this.status = CampStatus.RECRUITING; // 모집 중
 		} else if (today.isBefore(this.closeDate) || today.isEqual(this.closeDate)) {
 			this.status = CampStatus.IN_PROGRESS; // 진행 중
+		} else {
+			this.status = CampStatus.CLOSED; // 종료
 		}
 	}
 
-	// 캠프신청될때 남은인원 -1
+	// 캠프 신청 시 남은 인원 감소
 	public void decreaseRemainCount() {
 		if (remainCount <= 0) {
 			throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
 		}
-		this.remainCount--;
+		remainCount--;
 	}
 }
