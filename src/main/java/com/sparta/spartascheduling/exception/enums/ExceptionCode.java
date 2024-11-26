@@ -54,7 +54,7 @@ public enum ExceptionCode {
 
 	// 상담 관련 예외 (counsel)
 	NOT_FOUND_COUNSEL(HttpStatus.NOT_FOUND, "상담이 없습니다."),
-	
+
 	TUTOR_NOT_IN_CAMP(HttpStatus.BAD_REQUEST, "캠프에 있는 튜터에게만 신청이 가능합니다."),
 
 	CONSULTATION_IN_PROGRESS(HttpStatus.BAD_REQUEST, "이미 진행 중인 상담이 있습니다. 새로운 상담을 신청할 수 없습니다."),
@@ -73,7 +73,10 @@ public enum ExceptionCode {
 
 	NO_AUTHORIZATION_TUTOR(HttpStatus.FORBIDDEN, "TUTOR 권한이 필요합니다."),
 
-	ALREADY_EXIST_COUNSEL(HttpStatus.BAD_REQUEST, "이미 상담이 존재하여 변경이 어렵습니다.");
+	ALREADY_EXIST_COUNSEL(HttpStatus.BAD_REQUEST, "이미 상담이 존재하여 변경이 어렵습니다."),
+
+	// 복수 권한 관련 예외
+	NO_HAVE_AUTH_DELETE(HttpStatus.FORBIDDEN, "매니저가 아니거나 자신이 아닌 사람을 삭제 할 수 없습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String message;
