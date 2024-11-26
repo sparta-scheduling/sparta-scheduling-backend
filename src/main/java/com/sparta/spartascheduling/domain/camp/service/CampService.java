@@ -89,8 +89,9 @@ public class CampService {
 			.collect(Collectors.toList());
 	}
 
-	// 캠프 신청 - [문정원 파트]
-	@Transactional
+	// [문정원 파트 - 캠프 신청]
+
+	@Transactional()
 	public UserCamp applyForCamp(Long campId, AuthUser authUser) {
 		if (!"USER".equals(authUser.getUserType())) {
 			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
@@ -114,18 +115,30 @@ public class CampService {
 			User user = userRepository.findById(authUser.getId())
 				.orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
 
-			// 남은 인원 감소
+			if (userCampCheck != null && campId == userCampCheck.getCamp().getId()) {
+				throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
+			}
+
+			if (userCampCheck != null && userCampCheck.getCamp().getRemainCount() <= 0) {
+				throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
+			}
+
+			// 캠프 신청 시 남은 인원 감소
 			camp.decreaseRemainCount();
-			entityManager.persist(camp);
+			campRepository.save(camp);
 
 			// 유저-캠프 관계 생성 및 저장
 			UserCamp userCamp = UserCamp.of(user, camp);
 			return userCampRepository.save(userCamp);
 
-		}
-		catch (LockTimeoutException e) {
+		} catch (LockTimeoutException e) {
 			// 타임아웃 발생 시 예외 처리
 			throw new CampException(ExceptionCode.CAMP_LOCK_TIMEOUT, e);
 		}
+		// 캠프신청 등록
+		UserCamp userCamp = UserCamp.of(user, camp);
+		userCampRepository.save(userCamp);
+		//return userCamp;
+		return null; // 위처럼 반환하게 되면 transaction 상태의 객체를 반환하게 되므로 경고가 발생하면서 500에러가 발생합니다. 일단 null 처리
 	}
 }

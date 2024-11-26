@@ -1,5 +1,8 @@
 package com.sparta.spartascheduling.domain.userCamp.entity;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.sparta.spartascheduling.common.entity.Timestamped;
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
 import com.sparta.spartascheduling.domain.user.entity.User;
@@ -27,12 +30,12 @@ public class UserCamp extends Timestamped {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private User user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "camp_id", nullable = false)
 	private Camp camp;
-
 
 	private UserCamp(User user, Camp camp) {
 		this.user = user;

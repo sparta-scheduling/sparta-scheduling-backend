@@ -1,20 +1,30 @@
 package com.sparta.spartascheduling.domain.camp.entity;
 
+import java.time.LocalDate;
+
 import com.sparta.spartascheduling.common.entity.Timestamped;
 import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
 import com.sparta.spartascheduling.exception.customException.CampException;
 import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.lang.annotation.Retention;
-import java.time.LocalDate;
 
 @Getter
 @Entity
@@ -65,8 +75,8 @@ public class Camp extends Timestamped {
 			.openDate(openDate)
 			.closeDate(closeDate)
 			.maxCount(maxCount)
-			.remainCount(maxCount) // 생성 시 remainCount는 maxCount로 초기화
 			.manager(manager)
+			.remainCount(maxCount) // 생성 시 remainCount는 maxCount로 초기화
 			.status(CampStatus.CREATED) // 초기 상태는 CREATED
 			.build();
 
@@ -106,11 +116,11 @@ public class Camp extends Timestamped {
 		}
 	}
 
-	// 캠프 신청 시 남은 인원 감소
+	// 캠프신청될때 남은인원 -1
 	public void decreaseRemainCount() {
 		if (remainCount <= 0) {
 			throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
 		}
-		remainCount--;
+		this.remainCount--;
 	}
 }
