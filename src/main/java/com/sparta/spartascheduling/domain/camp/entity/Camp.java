@@ -73,6 +73,7 @@ public class Camp extends Timestamped {
 			.closeDate(closeDate)
 			.maxCount(maxCount)
 			.manager(manager)
+			.remainCount(maxCount) // 남은 자리가 0이 되는 예외 발생을 수정했습니다.
 			.status(CampStatus.CREATED)
 			.build();
 

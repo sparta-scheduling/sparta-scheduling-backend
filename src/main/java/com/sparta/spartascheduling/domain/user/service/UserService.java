@@ -12,6 +12,7 @@ import com.sparta.spartascheduling.domain.user.repository.UserRepository;
 import com.sparta.spartascheduling.domain.userCamp.entity.UserCamp;
 import com.sparta.spartascheduling.domain.userCamp.repository.UserCampRepository;
 import com.sparta.spartascheduling.exception.customException.CustomAuthException;
+import com.sparta.spartascheduling.exception.customException.UserCampException;
 import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,10 @@ public class UserService {
 	@Transactional // lazy 로딩의 특성상 userCamp를 가져오고 나서 트랜잭션이 종료되어 LazyInitializationException 이 발생 (수정)
 	public UserMypageDto getMypage(AuthUser authUser) {
 		UserCamp userCamp = userCampRepository.findByUserId(authUser.getId());
+		if (userCamp == null) {
+			throw new UserCampException(ExceptionCode.NOT_FOUND_USER_CAMP);
+		} // 유저 캠프가 없는 경우에 대한 예외처리 추가
+
 		Camp camp = userCamp.getCamp();
 		return new UserMypageDto(camp.getName());
 	}
