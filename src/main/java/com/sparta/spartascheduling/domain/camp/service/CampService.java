@@ -128,7 +128,7 @@ public class CampService {
 
 		} catch (LockTimeoutException e) {
 			// 타임아웃 예외 처리
-			throw new CampException(ExceptionCode.CAMP_LOCK_TIMEOUT, e);
+			throw new CampException(ExceptionCode.CAMP_LOCK_TIMEOUT);
 		}
 	}
 }
