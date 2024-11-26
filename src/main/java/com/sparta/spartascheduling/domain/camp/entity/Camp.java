@@ -108,6 +108,8 @@ public class Camp extends Timestamped {
 			this.status = CampStatus.RECRUITING; // 모집 중
 		} else if (today.isBefore(this.closeDate) || today.isEqual(this.closeDate)) {
 			this.status = CampStatus.IN_PROGRESS; // 진행 중
+		} else {
+			this.status = CampStatus.CLOSED; // 종료
 		}
 	}
 
