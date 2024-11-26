@@ -1,6 +1,7 @@
 package com.sparta.spartascheduling.domain.camp.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ import com.sparta.spartascheduling.exception.customException.ManagerException;
 import com.sparta.spartascheduling.exception.customException.UserException;
 import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -32,6 +35,7 @@ public class CampService {
 	private final ManagerRepository managerRepository;
 	private final UserRepository userRepository;
 	private final UserCampRepository userCampRepository;
+	private EntityManager entityManager;
 
 	// 캠프 생성 - [홍주영 파트]
 	@Transactional
@@ -88,36 +92,40 @@ public class CampService {
 	// 캠프 신청 - [문정원 파트]
 	@Transactional
 	public UserCamp applyForCamp(Long campId, AuthUser authUser) {
-		// USER 권한 확인
 		if (!"USER".equals(authUser.getUserType())) {
 			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
 		}
 
-		// 비관적 락을 사용하여 캠프 조회
-		Camp camp = campRepository.findByIdWithLock(campId)
-			.orElseThrow(() -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
+		try {
+			// 엔티티 매니저를 통해 타임아웃 설정 포함하여 캠프 조회
+			Camp camp = entityManager.find(
+				Camp.class,
+				campId,
+				LockModeType.PESSIMISTIC_WRITE,
+				Map.of("javax.persistence.lock.timeout", 5000) // 타임아웃 5초 설정
+			);
 
-		// 남은 인원 확인
-		if (camp.getRemainCount() <= 0) {
-			throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
+			// 남은 인원이 없는 경우 처리
+			if (camp.getRemainCount() <= 0) {
+				throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
+			}
+
+			// 유저 확인
+			User user = userRepository.findById(authUser.getId())
+				.orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
+
+			// 남은 인원 감소
+			camp.decreaseRemainCount();
+			entityManager.persist(camp);
+
+			// 유저-캠프 관계 생성 및 저장
+			UserCamp userCamp = UserCamp.of(user, camp);
+			return userCampRepository.save(userCamp);
+
 		}
-
-		// 중복 신청 확인 추가
-		boolean alreadyApplied = userCampRepository.existsByUserIdAndCampId(authUser.getId(), campId);
-		if (alreadyApplied) {
-			throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
+		catch (LockTimeoutException e) {
+			// 타임아웃 발생 시 예외 처리
+			throw new CampException(ExceptionCode.CAMP_LOCK_TIMEOUT, e);
 		}
-
-		// 유저 조회
-		User user = userRepository.findById(authUser.getId())
-			.orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
-
-		// 남은 인원 감소
-		camp.decreaseRemainCount();
-		campRepository.save(camp);
-
-		// 유저-캠프 관계 등록
-		UserCamp userCamp = UserCamp.of(user, camp);
-		return userCampRepository.save(userCamp);
 	}
 }

@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.lang.annotation.Retention;
 import java.time.LocalDate;
 
 @Getter
