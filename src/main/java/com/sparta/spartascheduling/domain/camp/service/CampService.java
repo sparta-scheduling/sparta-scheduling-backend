@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,13 +35,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CampService {
 
+	private static final Logger log = LoggerFactory.getLogger(CampService.class);
+
 	private final CampRepository campRepository;
 	private final ManagerRepository managerRepository;
 	private final UserRepository userRepository;
 	private final UserCampRepository userCampRepository;
 
 	@PersistenceContext
-	private EntityManager entityManager; // EntityManager를 주입받아 사용
+	private EntityManager entityManager; // EntityManager 주입받아 사용
 
 	// 캠프 생성 로직
 	@Transactional
@@ -66,8 +70,8 @@ public class CampService {
 			requestDto.getMaxCount(),
 			manager
 		);
-		Camp savedCamp = campRepository.save(camp);
-		return CampResponseDto.from(savedCamp);
+
+		return CampResponseDto.from(campRepository.save(camp));
 	}
 
 	// 캠프 단건 조회
@@ -81,8 +85,8 @@ public class CampService {
 	// 캠프 리스트 조회
 	@Transactional(readOnly = true)
 	public List<CampResponseDto> getAllCamps() {
-		List<Camp> camps = campRepository.findAllOrderedByStatus();
-		return camps.stream()
+		return campRepository.findAllOrderedByStatus()
+			.stream()
 			.map(CampResponseDto::from)
 			.collect(Collectors.toList());
 	}
@@ -95,7 +99,7 @@ public class CampService {
 		}
 
 		try {
-			// 비관적 락과 타임아웃을 설정하여 캠프 조회
+			// 비관적 락(PESSIMISTIC_WRITE)을 사용해 캠프 정보를 가져옴. 타임아웃을 5초로 설정
 			Camp camp = entityManager.find(
 				Camp.class,
 				campId,
@@ -103,7 +107,7 @@ public class CampService {
 				Map.of("javax.persistence.lock.timeout", 5000) // 타임아웃 5초 설정
 			);
 
-			// 캠프 상태 및 남은 인원 확인
+			// 캠프의 남은 인원이 0 이하인 경우 예외를 발생
 			if (camp.getRemainCount() <= 0) {
 				throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
 			}
@@ -118,16 +122,16 @@ public class CampService {
 				throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
 			}
 
-			// 남은 인원 감소
+			// 남은 인원을 감소시키고 엔티티를 저장
 			camp.decreaseRemainCount();
-			entityManager.persist(camp);
+			entityManager.persist(camp); // 비관적 락을 사용한 상태에서 remainCount 업데이트
 
 			// 유저-캠프 관계 생성 및 저장
-			UserCamp userCamp = UserCamp.of(user, camp);
-			return userCampRepository.save(userCamp);
+			return userCampRepository.save(UserCamp.of(user, camp));
 
 		} catch (LockTimeoutException e) {
-			// 타임아웃 예외 처리
+			// 타임아웃 발생 시 로그를 기록하고 사용자 정의 예외를 발생
+			log.error("Lock timeout while applying for camp with ID: {}", campId, e);
 			throw new CampException(ExceptionCode.CAMP_LOCK_TIMEOUT);
 		}
 	}

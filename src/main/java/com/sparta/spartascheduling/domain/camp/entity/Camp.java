@@ -8,18 +8,7 @@ import com.sparta.spartascheduling.domain.manager.entity.Manager;
 import com.sparta.spartascheduling.exception.customException.CampException;
 import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -63,28 +52,25 @@ public class Camp extends Timestamped {
 	@JoinColumn(name = "manager_id", nullable = false)
 	private Manager manager;
 
-	// 정적 팩토리 메서드로 캠프 생성 및 유효성 검사
+	// 캠프 생성 로직
 	public static Camp createCamp(String name, String contents, LocalDate openDate, LocalDate closeDate, int maxCount,
 		Manager manager) {
-		validateCampDates(openDate, closeDate); // 날짜 유효성 검사
-		validateMaxCount(maxCount); // 최대 인원 유효성 검사
+		validateCampDates(openDate, closeDate);
+		validateMaxCount(maxCount);
 
-		Camp camp = Camp.builder()
+		return Camp.builder() // 초기상태 CREATED 고정이기에 updateStatus 호출 할 필요없어서 수정
 			.name(name)
 			.contents(contents)
 			.openDate(openDate)
 			.closeDate(closeDate)
 			.maxCount(maxCount)
+			.remainCount(maxCount) // 초기 남은 인원은 최대 인원으로 설정
 			.manager(manager)
-			.remainCount(maxCount) // 생성 시 remainCount는 maxCount로 초기화
-			.status(CampStatus.CREATED) // 초기 상태는 CREATED
+			.status(CampStatus.CREATED)
 			.build();
-
-		camp.updateStatus(); // 상태 업데이트
-		return camp;
 	}
 
-	// 캠프 날짜 유효성 검사
+	// 날짜 유효성 검사
 	private static void validateCampDates(LocalDate openDate, LocalDate closeDate) {
 		if (openDate.isAfter(closeDate)) {
 			throw new CampException(ExceptionCode.START_DATE_AFTER_END_DATE);
@@ -101,7 +87,7 @@ public class Camp extends Timestamped {
 		}
 	}
 
-	// 상태 업데이트 메서드
+	// 상태 업데이트
 	public void updateStatus() {
 		LocalDate today = LocalDate.now();
 
@@ -116,7 +102,7 @@ public class Camp extends Timestamped {
 		}
 	}
 
-	// 캠프신청될때 남은인원 -1
+	// 남은 인원 감소
 	public void decreaseRemainCount() {
 		if (remainCount <= 0) {
 			throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
