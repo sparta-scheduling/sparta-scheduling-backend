@@ -25,6 +25,8 @@ import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.LockTimeoutException;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -35,12 +37,13 @@ public class CampService {
 	private final ManagerRepository managerRepository;
 	private final UserRepository userRepository;
 	private final UserCampRepository userCampRepository;
-	private EntityManager entityManager;
 
-	// 캠프 생성 - [홍주영 파트]
+	@PersistenceContext
+	private EntityManager entityManager; // EntityManager를 주입받아 사용
+
+	// 캠프 생성 로직
 	@Transactional
 	public CampResponseDto createCamp(CampRequestDto requestDto, AuthUser authUser) {
-		// ADMIN 권한 검증
 		if (!"ADMIN".equals(authUser.getUserType())) {
 			throw new CampException(ExceptionCode.NO_AUTHORIZATION_ADMIN);
 		}
@@ -70,35 +73,29 @@ public class CampService {
 	// 캠프 단건 조회
 	@Transactional(readOnly = true)
 	public CampResponseDto getCampById(Long campId) {
-		// 캠프 조회
 		Camp camp = campRepository.findById(campId)
 			.orElseThrow(() -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
-
-		// 조회된 camp 엔티티를 기반으로 DTO 생성 및 반환
 		return CampResponseDto.from(camp);
 	}
 
 	// 캠프 리스트 조회
 	@Transactional(readOnly = true)
 	public List<CampResponseDto> getAllCamps() {
-		// 상태별 우선순위를 적용하여 캠프 리스트를 반환
 		List<Camp> camps = campRepository.findAllOrderedByStatus();
-
 		return camps.stream()
 			.map(CampResponseDto::from)
 			.collect(Collectors.toList());
 	}
 
-	// [문정원 파트 - 캠프 신청]
-
-	@Transactional()
+	// 캠프 신청 로직
+	@Transactional
 	public UserCamp applyForCamp(Long campId, AuthUser authUser) {
 		if (!"USER".equals(authUser.getUserType())) {
 			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
 		}
 
 		try {
-			// 엔티티 매니저를 통해 타임아웃 설정 포함하여 캠프 조회
+			// 비관적 락과 타임아웃을 설정하여 캠프 조회
 			Camp camp = entityManager.find(
 				Camp.class,
 				campId,
@@ -106,7 +103,7 @@ public class CampService {
 				Map.of("javax.persistence.lock.timeout", 5000) // 타임아웃 5초 설정
 			);
 
-			// 남은 인원이 없는 경우 처리
+			// 캠프 상태 및 남은 인원 확인
 			if (camp.getRemainCount() <= 0) {
 				throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
 			}
@@ -115,30 +112,23 @@ public class CampService {
 			User user = userRepository.findById(authUser.getId())
 				.orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
 
-			if (userCampCheck != null && campId == userCampCheck.getCamp().getId()) {
+			// 유저가 이미 신청했는지 확인
+			UserCamp userCampCheck = userCampRepository.findByUserId(authUser.getId());
+			if (userCampCheck != null && campId.equals(userCampCheck.getCamp().getId())) {
 				throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
 			}
 
-			if (userCampCheck != null && userCampCheck.getCamp().getRemainCount() <= 0) {
-				throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
-			}
-
-			// 캠프 신청 시 남은 인원 감소
+			// 남은 인원 감소
 			camp.decreaseRemainCount();
-			campRepository.save(camp);
+			entityManager.persist(camp);
 
 			// 유저-캠프 관계 생성 및 저장
 			UserCamp userCamp = UserCamp.of(user, camp);
 			return userCampRepository.save(userCamp);
 
 		} catch (LockTimeoutException e) {
-			// 타임아웃 발생 시 예외 처리
+			// 타임아웃 예외 처리
 			throw new CampException(ExceptionCode.CAMP_LOCK_TIMEOUT, e);
 		}
-		// 캠프신청 등록
-		UserCamp userCamp = UserCamp.of(user, camp);
-		userCampRepository.save(userCamp);
-		//return userCamp;
-		return null; // 위처럼 반환하게 되면 transaction 상태의 객체를 반환하게 되므로 경고가 발생하면서 500에러가 발생합니다. 일단 null 처리
 	}
 }

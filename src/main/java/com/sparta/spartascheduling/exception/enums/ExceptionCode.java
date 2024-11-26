@@ -76,7 +76,10 @@ public enum ExceptionCode {
 	ALREADY_EXIST_COUNSEL(HttpStatus.BAD_REQUEST, "이미 상담이 존재하여 변경이 어렵습니다."),
 
 	// 복수 권한 관련 예외
-	NO_HAVE_AUTH_DELETE(HttpStatus.FORBIDDEN, "매니저가 아니거나 자신이 아닌 사람을 삭제 할 수 없습니다.");
+	NO_HAVE_AUTH_DELETE(HttpStatus.FORBIDDEN, "매니저가 아니거나 자신이 아닌 사람을 삭제 할 수 없습니다."),
+
+	// 락 타임아웃 예외 처리
+	CAMP_LOCK_TIMEOUT(HttpStatus.CONFLICT, "캠프 신청 중 타임아웃이 발생했습니다");
 
 	private final HttpStatus httpStatus;
 	private final String message;
