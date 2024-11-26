@@ -26,8 +26,8 @@ public class JwtFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws
 		IOException, ServletException {
-		HttpServletRequest httpRequest = (HttpServletRequest) request;
-		HttpServletResponse httpResponse = (HttpServletResponse) response;
+		HttpServletRequest httpRequest = (HttpServletRequest)request;
+		HttpServletResponse httpResponse = (HttpServletResponse)response;
 		String url = httpRequest.getRequestURI();
 
 		if (StringUtils.hasText(url) && (url.startsWith("/auth"))) {
@@ -61,6 +61,8 @@ public class JwtFilter implements Filter {
 		httpRequest.setAttribute("userId", Long.parseLong(claims.getSubject()));
 		httpRequest.setAttribute("email", claims.get("email"));
 		httpRequest.setAttribute("username", claims.get("username"));
+		httpRequest.setAttribute("userType",
+			claims.get("userType")); // role 을 추가해줘야 @Auth 에서 userType 이 null 발생하지 않습니다.
 
 		if (url.startsWith("/admin")) {
 			// 관리자 권한이 없는 경우 403을 반환합니다.

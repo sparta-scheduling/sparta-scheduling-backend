@@ -52,9 +52,10 @@ public class CounselService {
 		Tutor tutor = tutorRepository.findById(request.tutorId())
 			.orElseThrow(() -> new TutorException(ExceptionCode.NOT_FOUND_TUTOR));
 
-		UserCamp usercamp = userCampRepository.findById(id)
-			.orElseThrow(() -> new UserCampException(ExceptionCode.NOT_FOUND_USER_CAMP));
-
+		UserCamp usercamp = userCampRepository.findByUserId(id);
+		if (usercamp == null) {
+			throw new UserCampException(ExceptionCode.NOT_FOUND_USER_CAMP);
+		}
 		// 상담 중복 확인
 		Optional<Counsel> existingCounsel = counselRepository.findByUserIdAndStatus(id, CounselStatus.WAITING);
 		if (existingCounsel.isPresent()) {

@@ -44,12 +44,25 @@ public class GlobalExceptionHandler {
 			.body(makeResponseExceptionDto(exceptionCode));
 	}
 
+	// counsel 신청
 	@ExceptionHandler(CounselException.class)
 	public ResponseEntity<Object> handleCounselException(final CounselException e) {
+		// 예외 코드와 메시지를 로그에 기록
 		ExceptionCode exceptionCode = e.getExceptionCode();
-		log.error("{}, {}", exceptionCode.getHttpStatus(), e.getExceptionCode());
-		return ResponseEntity.status(exceptionCode.getHttpStatus())
-			.body(makeResponseExceptionDto(exceptionCode));
+		log.error("{}, {}", exceptionCode.getHttpStatus(), e.getMessage());
+
+		// 예외 메시지를 포함하여 ResponseExceptionDto 객체 생성
+		ResponseExceptionDto responseDto = makeResponseExceptionDto(exceptionCode, e.getMessage());
+
+		// 예외 응답 반환
+		return ResponseEntity.status(exceptionCode.getHttpStatus()).body(responseDto);
+	}
+
+	private ResponseExceptionDto makeResponseExceptionDto(ExceptionCode exceptionCode, String message) {
+		return ResponseExceptionDto.builder()
+			.code(exceptionCode.name())
+			.message(message)
+			.build();
 	}
 
 	@ExceptionHandler(ManagerException.class)

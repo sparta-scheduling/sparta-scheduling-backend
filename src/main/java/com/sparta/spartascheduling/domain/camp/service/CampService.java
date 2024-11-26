@@ -1,8 +1,8 @@
 package com.sparta.spartascheduling.domain.camp.service;
-import com.sparta.spartascheduling.common.dto.AuthUser;
-import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
+
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -119,6 +119,7 @@ public class CampService {
 		// 캠프신청 등록
 		UserCamp userCamp = UserCamp.of(user, camp);
 		userCampRepository.save(userCamp);
-		return userCamp;
+		//return userCamp;
+		return null; // 위처럼 반환하게 되면 transaction 상태의 객체를 반환하게 되므로 경고가 발생하면서 500에러가 발생합니다. 일단 null 처리
 	}
 }
