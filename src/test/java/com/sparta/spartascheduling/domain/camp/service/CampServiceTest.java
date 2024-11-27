@@ -1,7 +1,9 @@
 package com.sparta.spartascheduling.domain.camp.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
@@ -13,6 +15,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import com.sparta.spartascheduling.common.dto.AuthUser;
 import com.sparta.spartascheduling.common.util.RedisLockUtil;
 import com.sparta.spartascheduling.domain.camp.dto.CampRequestDto;
 import com.sparta.spartascheduling.domain.camp.dto.CampResponseDto;
@@ -24,18 +35,8 @@ import com.sparta.spartascheduling.domain.manager.repository.ManagerRepository;
 import com.sparta.spartascheduling.domain.user.entity.User;
 import com.sparta.spartascheduling.domain.user.repository.UserRepository;
 import com.sparta.spartascheduling.domain.userCamp.repository.UserCampRepository;
-import com.sparta.spartascheduling.common.dto.AuthUser;
-import com.sparta.spartascheduling.exception.customException.CampException;
 import com.sparta.spartascheduling.exception.customException.ManagerException;
 import com.sparta.spartascheduling.exception.enums.ExceptionCode;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class CampServiceTest {
