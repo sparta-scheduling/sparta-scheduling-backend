@@ -6,6 +6,8 @@ import com.sparta.spartascheduling.common.entity.Timestamped;
 import com.sparta.spartascheduling.domain.counsel.enums.CounselStatus;
 import com.sparta.spartascheduling.domain.tutor.entity.Tutor;
 import com.sparta.spartascheduling.domain.user.entity.User;
+import com.sparta.spartascheduling.exception.customException.CampException;
+import com.sparta.spartascheduling.exception.enums.ExceptionCode;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +44,9 @@ public class Counsel extends Timestamped {
 	private String content;
 
 	private CounselStatus status;
+
+	@Version
+	private Long version;
 
 	@Builder
 	public Counsel(User user, Tutor tutor, LocalDateTime datetime, String content, CounselStatus status) {

@@ -63,6 +63,8 @@ public enum ExceptionCode {
 
 	INVALID_CONSULT_TIME(HttpStatus.BAD_REQUEST, "상담 시간이 아닙니다. 상담 가능 시간: {start} ~ {end}"),
 
+	ALREADY_COUNSEL_OUT(HttpStatus.BAD_REQUEST, "해당 상담은 마감되어 상담을 신청할 수 없습니다."),
+
 	// 매니저 (ADMIN) 관련 예외 (manager)
 	NO_AUTHORIZATION_ADMIN(HttpStatus.FORBIDDEN, "ADMIN 권한이 필요합니다."),
 

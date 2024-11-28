@@ -37,6 +37,7 @@ public class CounselService {
 	private final TutorRepository tutorRepository;
 	private final UserCampRepository userCampRepository;
 
+	@Transactional
 	public CounselResponse createCounsel(AuthUser authUser, CounselRequest request) {
 		// 유저 타입 확인
 		if (!"USER".equals(authUser.getUserType())) {
@@ -116,6 +117,7 @@ public class CounselService {
 			.toList();
 	}
 
+	@Transactional(readOnly = true)
 	public CounselResponse getCounselFromUser(AuthUser authUser) {
 		if (!"USER".equals(authUser.getUserType())) {
 			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
