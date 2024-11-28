@@ -71,10 +71,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.4.0'
 
     // redis 의존성 추가
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
-    // lettuce
-    implementation group: 'io.lettuce', name: 'lettuce-core', version: '6.5.0.RELEASE'
+//    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 }
 
