@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
 import com.sparta.spartascheduling.common.dto.AuthUser;
+import com.sparta.spartascheduling.domain.camp.dto.CampRequestDto;
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
 import com.sparta.spartascheduling.domain.camp.repository.CampRepository;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
@@ -43,6 +44,8 @@ class CampServiceConcurrentTest {
 
 	private Camp tCamp;
 
+	private static int USER_COUNT = 300;
+
 
 	@BeforeEach
 	void setUp() {
@@ -54,18 +57,26 @@ class CampServiceConcurrentTest {
 
 		managerRepository.save(manager);
 
-		tCamp = Camp.builder()
-			.name("Java/Spring 5기")
-			.contents("contents1")
-			.openDate(LocalDate.of(2024, 11, 30))
-			.closeDate(LocalDate.of(2025, 11, 11))
-			.manager(manager)
-			.remainCount(200)
-			.build();
+		CampRequestDto requestDto = new CampRequestDto(
+			"Java/Spring 3기",
+			"contents1",
+			LocalDate.of(2024, 11, 29),
+			LocalDate.of(2025, 11, 11),
+			140
+		);
+
+		tCamp = Camp.createCamp(
+			requestDto.getName(),
+			requestDto.getContents(),
+			requestDto.getOpenDate(),
+			requestDto.getCloseDate(),
+			requestDto.getMaxCount(),
+			manager
+		);
 
 		campRepository.save(tCamp);
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < USER_COUNT; i++) {
 			User user = User.builder()
 				.email("user" + i + "@test.com")
 				.username("user" + i)
@@ -79,10 +90,10 @@ class CampServiceConcurrentTest {
 	@Test
 	@DisplayName("동시에 100명이 수강신청 진행")
 	void test1() throws InterruptedException {
-		ExecutorService executorService = Executors.newFixedThreadPool(1000);
-		CountDownLatch countDownLatch = new CountDownLatch(1000);
+		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
+		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
 
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < USER_COUNT; i++) {
 			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
 			executorService.submit(() -> {
 				try {
@@ -95,16 +106,38 @@ class CampServiceConcurrentTest {
 
 		countDownLatch.await();
 		Camp result = campRepository.findById(tCamp.getId()).orElseThrow();
-		assertThat(result.getRemainCount()).isEqualTo(1000);
+		assertThat(result.getRemainCount()).isNotEqualTo(0);
+	}
+
+	@Test
+	@DisplayName("동시에 100명이 수강신청 진행, 그리고 비관적 락")
+	void test2() throws InterruptedException {
+		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
+		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
+
+		for (int i = 0; i < USER_COUNT; i++) {
+			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
+			executorService.submit(() -> {
+				try {
+					campService.applyForCampPessimistic(tCamp.getId(), authUser);
+				} finally {
+					countDownLatch.countDown();
+				}
+			});
+		}
+
+		countDownLatch.await();
+		Camp result = campRepository.findById(tCamp.getId()).orElseThrow();
+		assertThat(result.getRemainCount()).isEqualTo(0);
 	}
 
 	@Test
 	@DisplayName("동시에 100명이 수강신청 진행, 그리고 Redisson")
-	void test2() throws InterruptedException {
-		ExecutorService executorService = Executors.newFixedThreadPool(100);
-		CountDownLatch countDownLatch = new CountDownLatch(100);
+	void test3() throws InterruptedException {
+		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
+		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < USER_COUNT; i++) {
 			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
 			executorService.submit(() -> {
 				try {
@@ -114,10 +147,8 @@ class CampServiceConcurrentTest {
 				}
 			});
 		}
-
 		countDownLatch.await();
 		Camp result = campRepository.findById(tCamp.getId()).orElseThrow();
-		assertThat(result.getRemainCount()).isEqualTo(100);
+		assertThat(result.getRemainCount()).isEqualTo(0);
 	}
-
 }
