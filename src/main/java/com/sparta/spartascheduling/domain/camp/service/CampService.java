@@ -157,6 +157,7 @@ public class CampService {
 
 		UserCamp userCamp = UserCamp.of(user, camp);
 		userCampRepository.save(userCamp);
+		userCampRepository.delete(userCamp);
 
 		return new ApplyResponseDto(camp);
 	}
@@ -167,8 +168,10 @@ public class CampService {
 			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
 		}
 
-		Camp camp = campRepository.findByIdPessimistic(campId).orElseThrow( () -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
-		User user = userRepository.findById(authUser.getId()).orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
+		Camp camp = campRepository.findByIdPessimistic(campId)
+			.orElseThrow(() -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
+		User user = userRepository.findById(authUser.getId())
+			.orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
 
 		UserCamp userCampCheck = userCampRepository.findByUserId(authUser.getId());
 		boolean campCheck = userCampRepository.existsActiveCampForUser(authUser.getId(), CampStatus.CLOSED);
@@ -189,6 +192,7 @@ public class CampService {
 
 		UserCamp userCamp = UserCamp.of(user, camp);
 		userCampRepository.save(userCamp);
+		userCampRepository.delete(userCamp);
 
 		return new ApplyResponseDto(camp);
 	}
@@ -198,7 +202,6 @@ public class CampService {
 		if (!"USER".equals(authUser.getUserType())) {
 			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
 		}
-
 		try {
 			// 락 획득 대기
 			while (Boolean.FALSE.equals(lettuceLockFacade.acquireLock(campId))) {
@@ -209,6 +212,13 @@ public class CampService {
 			Camp camp = campRepository.findById(campId)
 				.orElseThrow(() -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
 
+			if (camp.getRemainCount() <= 0) {
+				if (lettuceLockFacade.isLockAcquired(campId)) {
+					lettuceLockFacade.releaseLock(campId);
+				}
+				throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
+			}
+
 			User user = userRepository.findById(authUser.getId())
 				.orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
 
@@ -217,17 +227,25 @@ public class CampService {
 			boolean campCheck = userCampRepository.existsActiveCampForUser(authUser.getId(), CampStatus.CLOSED);
 
 			if (userCampCheck != null && userCampCheck.getCamp().getRemainCount() <= 0) {
+				if (lettuceLockFacade.isLockAcquired(campId)) {
+					lettuceLockFacade.releaseLock(campId);
+				}
 				throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
 			}
 
 			if (campCheck || (userCampCheck != null && campId.equals(userCampCheck.getCamp().getId()))) {
+				if (lettuceLockFacade.isLockAcquired(campId)) {
+					lettuceLockFacade.releaseLock(campId);
+				}
 				throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
 			}
 
-			// 캠프 잔여 인원 감소 및 저장
+			// 이 조건들 정리할 필요 있을 듯
+
 			camp.decreaseRemainCount();
 			UserCamp userCamp = UserCamp.of(user, camp);
 			userCampRepository.save(userCamp);
+			userCampRepository.delete(userCamp);
 
 			if (TransactionSynchronizationManager.isSynchronizationActive()) {
 				TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {

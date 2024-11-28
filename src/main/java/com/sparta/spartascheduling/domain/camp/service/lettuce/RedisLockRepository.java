@@ -28,6 +28,11 @@ public class RedisLockRepository {
 		return redisTemplate.delete(generated(campId));
 	}
 
+	// 캠프 ID에 대한 락 상태 확인
+	public Boolean isLockAcquired(final Long campId) {
+		return redisTemplate.hasKey(generated(campId));  // 락 키가 존재하면 락이 획득된 상태
+	}
+
 	private String generated(Long key) {
 		return key.toString();
 	}
