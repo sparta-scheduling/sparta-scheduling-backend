@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.sparta.spartascheduling.common.annotation.Auth;
 import com.sparta.spartascheduling.common.dto.AuthUser;
+import com.sparta.spartascheduling.domain.camp.dto.ApplyResponseDto;
 import com.sparta.spartascheduling.domain.camp.dto.CampRequestDto;
 import com.sparta.spartascheduling.domain.camp.dto.CampResponseDto;
+import com.sparta.spartascheduling.domain.camp.service.CampLockFacade;
 import com.sparta.spartascheduling.domain.camp.service.CampService;
 import com.sparta.spartascheduling.domain.userCamp.entity.UserCamp;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class CampController {
 
     private final CampService campService;
+	private final CampLockFacade campLockFacade;
 
 	// 캠프 생성 API
 	@PostMapping("/admin/camps")
@@ -49,5 +52,11 @@ public class CampController {
 	@PostMapping("/camps/{campId}")
 	public UserCamp applyForCamp(@PathVariable Long campId, @Auth AuthUser authUser){
 	 	return campService.applyForCamp(campId, authUser);
+	}
+
+	// Redisson 적용
+	@PostMapping("/camps/{campId}/redisson")
+	public ApplyResponseDto applyForCampRedisson(@PathVariable Long campId, @Auth AuthUser authUser){
+		return campLockFacade.applyForCampRedisson(campId, authUser);
 	}
 }
