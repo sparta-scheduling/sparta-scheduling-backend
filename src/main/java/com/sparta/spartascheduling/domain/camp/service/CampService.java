@@ -1,12 +1,16 @@
 package com.sparta.spartascheduling.domain.camp.service;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sparta.spartascheduling.common.dto.AuthUser;
+import com.sparta.spartascheduling.domain.camp.dto.ApplyResponseDto;
 import com.sparta.spartascheduling.domain.camp.dto.CampRequestDto;
 import com.sparta.spartascheduling.domain.camp.dto.CampResponseDto;
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
@@ -121,5 +125,37 @@ public class CampService {
 		userCampRepository.save(userCamp);
 		//return userCamp;
 		return null; // 위처럼 반환하게 되면 transaction 상태의 객체를 반환하게 되므로 경고가 발생하면서 500에러가 발생합니다. 일단 null 처리
+	}
+
+	@Transactional
+	public ApplyResponseDto applyForCampRedisson(Long campId, AuthUser authUser) {
+		if (!"USER".equals(authUser.getUserType())) {
+			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
+		}
+
+		Camp camp = campRepository.findById(campId).orElseThrow(() -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
+		User user = userRepository.findById(authUser.getId()).orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
+
+		UserCamp userCampCheck = userCampRepository.findByUserId(authUser.getId());
+		boolean campCheck = userCampRepository.existsActiveCampForUser(authUser.getId(), CampStatus.CLOSED);
+
+		if (campCheck) {
+			throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
+		}
+
+		if (userCampCheck != null && campId == userCampCheck.getCamp().getId()) {
+			throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
+		}
+
+		if (userCampCheck != null && userCampCheck.getCamp().getRemainCount() <= 0) {
+			throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
+		}
+
+		camp.decreaseRemainCount();
+
+		UserCamp userCamp = UserCamp.of(user, camp);
+		userCampRepository.save(userCamp);
+
+		return new ApplyResponseDto(camp);
 	}
 }
