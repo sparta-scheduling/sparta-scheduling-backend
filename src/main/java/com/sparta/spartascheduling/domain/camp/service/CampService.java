@@ -157,7 +157,7 @@ public class CampService {
 
 		UserCamp userCamp = UserCamp.of(user, camp);
 		userCampRepository.save(userCamp);
-		userCampRepository.delete(userCamp);
+		//userCampRepository.delete(userCamp);
 
 		return new ApplyResponseDto(camp);
 	}
@@ -192,7 +192,7 @@ public class CampService {
 
 		UserCamp userCamp = UserCamp.of(user, camp);
 		userCampRepository.save(userCamp);
-		userCampRepository.delete(userCamp);
+		//userCampRepository.delete(userCamp);
 
 		return new ApplyResponseDto(camp);
 	}
@@ -245,7 +245,7 @@ public class CampService {
 			camp.decreaseRemainCount();
 			UserCamp userCamp = UserCamp.of(user, camp);
 			userCampRepository.save(userCamp);
-			userCampRepository.delete(userCamp);
+			//userCampRepository.delete(userCamp);
 
 			if (TransactionSynchronizationManager.isSynchronizationActive()) {
 				TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
