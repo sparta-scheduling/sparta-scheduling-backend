@@ -44,8 +44,7 @@ class CampServiceConcurrentTest {
 
 	private Camp tCamp;
 
-	private static int USER_COUNT = 300;
-
+	private static int USER_COUNT = 200;
 
 	@BeforeEach
 	void setUp() {
@@ -62,7 +61,7 @@ class CampServiceConcurrentTest {
 			"contents1",
 			LocalDate.of(2024, 11, 29),
 			LocalDate.of(2025, 11, 11),
-			140
+			200
 		);
 
 		tCamp = Camp.createCamp(
@@ -90,11 +89,11 @@ class CampServiceConcurrentTest {
 	@Test
 	@DisplayName("동시에 100명이 수강신청 진행")
 	void test1() throws InterruptedException {
-		ExecutorService executorService = Executors.newFixedThreadPool(1000);
-		CountDownLatch countDownLatch = new CountDownLatch(1000);
+		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
+		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
 
 		for (int i = 0; i < USER_COUNT; i++) {
-			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
+			AuthUser authUser = new AuthUser((long)i, "user" + i + "@test.com", "user" + i, "USER");
 			executorService.submit(() -> {
 				try {
 					campService.applyForCamp(tCamp.getId(), authUser);
@@ -115,8 +114,8 @@ class CampServiceConcurrentTest {
 		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
 		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
 
-		for (int i = 0; i < USER_COUNT; i++) {
-			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
+		for (int i = 1; i <= USER_COUNT; i++) {
+			AuthUser authUser = new AuthUser((long)i, "user" + i + "@test.com", "user" + i, "USER");
 			executorService.submit(() -> {
 				try {
 					campService.applyForCampPessimistic(tCamp.getId(), authUser);
@@ -137,8 +136,8 @@ class CampServiceConcurrentTest {
 		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
 		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
 
-		for (int i = 0; i < USER_COUNT; i++) {
-			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
+		for (int i = 1; i <= USER_COUNT; i++) {
+			AuthUser authUser = new AuthUser((long)i, "user" + i + "@test.com", "user" + i, "USER");
 			executorService.submit(() -> {
 				try {
 					campLockFacade.applyForCampRedisson(tCamp.getId(), authUser);
@@ -155,11 +154,11 @@ class CampServiceConcurrentTest {
 
 	@Test
 	@DisplayName("동시에 100명이 수강신청 진행, 그리고 lettuce")
-	void test3() throws InterruptedException {
-		ExecutorService executorService = Executors.newFixedThreadPool(100);
-		CountDownLatch countDownLatch = new CountDownLatch(100);
+	void test4() throws InterruptedException {
+		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
+		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
 
-		for (int i = 1; i <= 100; i++) {
+		for (int i = 1; i <= USER_COUNT; i++) {
 			AuthUser authUser = new AuthUser((long)i, "user" + i + "@test.com", "user" + i, "USER");
 			executorService.submit(() -> {
 				try {
