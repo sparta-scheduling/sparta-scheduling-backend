@@ -44,6 +44,9 @@ class CampServiceConcurrentTest {
 
 	private Camp tCamp;
 
+	private static int USER_COUNT = 300;
+
+
 	@BeforeEach
 	void setUp() {
 		Manager manager = Manager.builder()
@@ -59,7 +62,7 @@ class CampServiceConcurrentTest {
 			"contents1",
 			LocalDate.of(2024, 11, 29),
 			LocalDate.of(2025, 11, 11),
-			100
+			140
 		);
 
 		tCamp = Camp.createCamp(
@@ -73,7 +76,7 @@ class CampServiceConcurrentTest {
 
 		campRepository.save(tCamp);
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < USER_COUNT; i++) {
 			User user = User.builder()
 				.email("user" + i + "@test.com")
 				.username("user" + i)
@@ -90,8 +93,8 @@ class CampServiceConcurrentTest {
 		ExecutorService executorService = Executors.newFixedThreadPool(1000);
 		CountDownLatch countDownLatch = new CountDownLatch(1000);
 
-		for (int i = 0; i < 1000; i++) {
-			AuthUser authUser = new AuthUser((long)i, "user" + i + "@test.com", "user" + i, "USER");
+		for (int i = 0; i < USER_COUNT; i++) {
+			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
 			executorService.submit(() -> {
 				try {
 					campService.applyForCamp(tCamp.getId(), authUser);
@@ -103,17 +106,39 @@ class CampServiceConcurrentTest {
 
 		countDownLatch.await();
 		Camp result = campRepository.findById(tCamp.getId()).orElseThrow();
-		assertThat(result.getRemainCount()).isEqualTo(1000);
+		assertThat(result.getRemainCount()).isNotEqualTo(0);
+	}
+
+	@Test
+	@DisplayName("동시에 100명이 수강신청 진행, 그리고 비관적 락")
+	void test2() throws InterruptedException {
+		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
+		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
+
+		for (int i = 0; i < USER_COUNT; i++) {
+			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
+			executorService.submit(() -> {
+				try {
+					campService.applyForCampPessimistic(tCamp.getId(), authUser);
+				} finally {
+					countDownLatch.countDown();
+				}
+			});
+		}
+
+		countDownLatch.await();
+		Camp result = campRepository.findById(tCamp.getId()).orElseThrow();
+		assertThat(result.getRemainCount()).isEqualTo(0);
 	}
 
 	@Test
 	@DisplayName("동시에 100명이 수강신청 진행, 그리고 Redisson")
-	void test2() throws InterruptedException {
-		ExecutorService executorService = Executors.newFixedThreadPool(100);
-		CountDownLatch countDownLatch = new CountDownLatch(100);
+	void test3() throws InterruptedException {
+		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
+		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
 
-		for (int i = 0; i < 100; i++) {
-			AuthUser authUser = new AuthUser((long)i, "user" + i + "@test.com", "user" + i, "USER");
+		for (int i = 0; i < USER_COUNT; i++) {
+			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
 			executorService.submit(() -> {
 				try {
 					campLockFacade.applyForCampRedisson(tCamp.getId(), authUser);
@@ -125,7 +150,7 @@ class CampServiceConcurrentTest {
 
 		countDownLatch.await();
 		Camp result = campRepository.findById(tCamp.getId()).orElseThrow();
-		assertThat(result.getRemainCount()).isEqualTo(100);
+		assertThat(result.getRemainCount()).isEqualTo(0);
 	}
 
 	@Test

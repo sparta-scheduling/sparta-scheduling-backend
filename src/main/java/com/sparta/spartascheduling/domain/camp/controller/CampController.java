@@ -1,7 +1,5 @@
 package com.sparta.spartascheduling.domain.camp.controller;
-
 import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +17,7 @@ import com.sparta.spartascheduling.domain.camp.service.CampService;
 import com.sparta.spartascheduling.domain.userCamp.entity.UserCamp;
 
 import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -67,5 +66,11 @@ public class CampController {
 	@PostMapping("/camps/{campId}/lettuce")
 	public ApplyResponseDto applyForCampLettuce(@PathVariable Long campId, @Auth AuthUser authUser) {
 		return campService.applyForCampLettuce(campId, authUser);
+	}
+
+	// 비관적 락 적용
+	@PostMapping("/camps/{campId}/pessimistic")
+	public ApplyResponseDto applyForCampPessimistic(@PathVariable Long campId, @Auth AuthUser authUser){
+		return campService.applyForCampPessimistic(campId, authUser);
 	}
 }
