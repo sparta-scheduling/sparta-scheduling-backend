@@ -50,7 +50,7 @@ public class CampController {
 
 	// 캠프 신청 - 동시성 제어 할 곳
 	@PostMapping("/camps/{campId}")
-	public UserCamp applyForCamp(@PathVariable Long campId, @Auth AuthUser authUser){
+	public UserCamp applyForCamp(@PathVariable Long campId, @Auth AuthUser authUser) {
 	 	return campService.applyForCamp(campId, authUser);
 	}
 
@@ -58,5 +58,11 @@ public class CampController {
 	@PostMapping("/camps/{campId}/redisson")
 	public ApplyResponseDto applyForCampRedisson(@PathVariable Long campId, @Auth AuthUser authUser){
 		return campLockFacade.applyForCampRedisson(campId, authUser);
+	}
+
+	// 비관적 락 적용
+	@PostMapping("/camps/{campId}/pessimistic")
+	public ApplyResponseDto applyForCampPessimistic(@PathVariable Long campId, @Auth AuthUser authUser){
+		return campService.applyForCampPessimistic(campId, authUser);
 	}
 }

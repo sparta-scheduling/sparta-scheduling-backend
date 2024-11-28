@@ -158,4 +158,36 @@ public class CampService {
 
 		return new ApplyResponseDto(camp);
 	}
+
+	@Transactional
+	public ApplyResponseDto applyForCampPessimistic(Long campId, AuthUser authUser) {
+		if (!"USER".equals(authUser.getUserType())) {
+			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
+		}
+
+		Camp camp = campRepository.findByIdPessimistic(campId).orElseThrow( () -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
+		User user = userRepository.findById(authUser.getId()).orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
+
+		UserCamp userCampCheck = userCampRepository.findByUserId(authUser.getId());
+		boolean campCheck = userCampRepository.existsActiveCampForUser(authUser.getId(), CampStatus.CLOSED);
+
+		if (campCheck) {
+			throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
+		}
+
+		if (userCampCheck != null && campId == userCampCheck.getCamp().getId()) {
+			throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
+		}
+
+		if (userCampCheck != null && userCampCheck.getCamp().getRemainCount() <= 0) {
+			throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
+		}
+
+		camp.decreaseRemainCount();
+
+		UserCamp userCamp = UserCamp.of(user, camp);
+		userCampRepository.save(userCamp);
+
+		return new ApplyResponseDto(camp);
+	}
 }

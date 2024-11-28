@@ -2,11 +2,16 @@ package com.sparta.spartascheduling.domain.camp.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
+
+import jakarta.persistence.LockModeType;
 
 public interface CampRepository extends JpaRepository<Camp, Long> {
 
@@ -21,4 +26,8 @@ public interface CampRepository extends JpaRepository<Camp, Long> {
 		"     WHEN c.status = 'CLOSED' THEN 4 END, " +
 		"c.openDate ASC")
 	List<Camp> findAllOrderedByStatus();
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select c from Camp c WHERE c.id = :id")
+	Optional<Camp> findByIdPessimistic(@Param("id") Long id);
 }
