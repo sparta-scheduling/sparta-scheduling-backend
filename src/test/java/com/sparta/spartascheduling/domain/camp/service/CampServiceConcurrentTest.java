@@ -1,7 +1,6 @@
 package com.sparta.spartascheduling.domain.camp.service;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
 import java.util.concurrent.CountDownLatch;
@@ -11,27 +10,25 @@ import java.util.concurrent.Executors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 import com.sparta.spartascheduling.common.dto.AuthUser;
 import com.sparta.spartascheduling.domain.camp.dto.CampRequestDto;
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
 import com.sparta.spartascheduling.domain.camp.repository.CampRepository;
+import com.sparta.spartascheduling.domain.camp.service.lettuce.LettuceLockFacade;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
 import com.sparta.spartascheduling.domain.manager.repository.ManagerRepository;
 import com.sparta.spartascheduling.domain.user.entity.User;
 import com.sparta.spartascheduling.domain.user.repository.UserRepository;
 
 @SpringBootTest
-// @DataJpaTest
-// @Import({CampService.class, CampLockFacade.class})
+	// @DataJpaTest
+	// @Import({CampService.class, CampLockFacade.class})
 class CampServiceConcurrentTest {
 
-	@Autowired 
+	@Autowired
 	private ManagerRepository managerRepository;
 	@Autowired
 	private CampRepository campRepository;
@@ -42,10 +39,12 @@ class CampServiceConcurrentTest {
 	@Autowired
 	private CampService campService;
 
+	@Autowired
+	private LettuceLockFacade lettuceLockFacade;
+
 	private Camp tCamp;
 
-	private static int USER_COUNT = 300;
-
+	private static int USER_COUNT = 200;
 
 	@BeforeEach
 	void setUp() {
@@ -62,7 +61,7 @@ class CampServiceConcurrentTest {
 			"contents1",
 			LocalDate.of(2024, 11, 29),
 			LocalDate.of(2025, 11, 11),
-			140
+			200
 		);
 
 		tCamp = Camp.createCamp(
@@ -94,7 +93,7 @@ class CampServiceConcurrentTest {
 		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
 
 		for (int i = 0; i < USER_COUNT; i++) {
-			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
+			AuthUser authUser = new AuthUser((long)i, "user" + i + "@test.com", "user" + i, "USER");
 			executorService.submit(() -> {
 				try {
 					campService.applyForCamp(tCamp.getId(), authUser);
@@ -115,8 +114,8 @@ class CampServiceConcurrentTest {
 		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
 		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
 
-		for (int i = 0; i < USER_COUNT; i++) {
-			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
+		for (int i = 1; i <= USER_COUNT; i++) {
+			AuthUser authUser = new AuthUser((long)i, "user" + i + "@test.com", "user" + i, "USER");
 			executorService.submit(() -> {
 				try {
 					campService.applyForCampPessimistic(tCamp.getId(), authUser);
@@ -137,8 +136,8 @@ class CampServiceConcurrentTest {
 		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
 		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
 
-		for (int i = 0; i < USER_COUNT; i++) {
-			AuthUser authUser = new AuthUser((long) i, "user" + i + "@test.com", "user" + i, "USER");
+		for (int i = 1; i <= USER_COUNT; i++) {
+			AuthUser authUser = new AuthUser((long)i, "user" + i + "@test.com", "user" + i, "USER");
 			executorService.submit(() -> {
 				try {
 					campLockFacade.applyForCampRedisson(tCamp.getId(), authUser);
@@ -147,8 +146,35 @@ class CampServiceConcurrentTest {
 				}
 			});
 		}
+
 		countDownLatch.await();
 		Camp result = campRepository.findById(tCamp.getId()).orElseThrow();
 		assertThat(result.getRemainCount()).isEqualTo(0);
 	}
+
+	@Test
+	@DisplayName("동시에 100명이 수강신청 진행, 그리고 lettuce")
+	void test4() throws InterruptedException {
+		ExecutorService executorService = Executors.newFixedThreadPool(USER_COUNT);
+		CountDownLatch countDownLatch = new CountDownLatch(USER_COUNT);
+
+		for (int i = 1; i <= USER_COUNT; i++) {
+			AuthUser authUser = new AuthUser((long)i, "user" + i + "@test.com", "user" + i, "USER");
+			executorService.submit(() -> {
+				try {
+					campService.applyForCampLettuce(tCamp.getId(), authUser);
+				} finally {
+
+					countDownLatch.countDown();
+				}
+			});
+		}
+
+		countDownLatch.await();
+		executorService.shutdown();
+
+		Camp result = campRepository.findById(tCamp.getId()).orElseThrow();
+		assertThat(result.getRemainCount()).isEqualTo(0);
+	}
+
 }

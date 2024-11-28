@@ -1,13 +1,12 @@
 package com.sparta.spartascheduling.domain.camp.service;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.sparta.spartascheduling.common.dto.AuthUser;
 import com.sparta.spartascheduling.domain.camp.dto.ApplyResponseDto;
@@ -16,6 +15,7 @@ import com.sparta.spartascheduling.domain.camp.dto.CampResponseDto;
 import com.sparta.spartascheduling.domain.camp.entity.Camp;
 import com.sparta.spartascheduling.domain.camp.enums.CampStatus;
 import com.sparta.spartascheduling.domain.camp.repository.CampRepository;
+import com.sparta.spartascheduling.domain.camp.service.lettuce.LettuceLockFacade;
 import com.sparta.spartascheduling.domain.manager.entity.Manager;
 import com.sparta.spartascheduling.domain.manager.repository.ManagerRepository;
 import com.sparta.spartascheduling.domain.user.entity.User;
@@ -38,6 +38,7 @@ public class CampService {
 	private final ManagerRepository managerRepository;
 	private final UserRepository userRepository;
 	private final UserCampRepository userCampRepository;
+	private final LettuceLockFacade lettuceLockFacade;
 
 	// 캠프 생성 - [홍주영 파트]
 	@Transactional
@@ -134,7 +135,8 @@ public class CampService {
 		}
 
 		Camp camp = campRepository.findById(campId).orElseThrow(() -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
-		User user = userRepository.findById(authUser.getId()).orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
+		User user = userRepository.findById(authUser.getId())
+			.orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
 
 		UserCamp userCampCheck = userCampRepository.findByUserId(authUser.getId());
 		boolean campCheck = userCampRepository.existsActiveCampForUser(authUser.getId(), CampStatus.CLOSED);
@@ -190,4 +192,57 @@ public class CampService {
 
 		return new ApplyResponseDto(camp);
 	}
+
+	@Transactional
+	public ApplyResponseDto applyForCampLettuce(final Long campId, AuthUser authUser) {
+		if (!"USER".equals(authUser.getUserType())) {
+			throw new UserException(ExceptionCode.NO_AUTHORIZATION_USER);
+		}
+
+		try {
+			// 락 획득 대기
+			while (Boolean.FALSE.equals(lettuceLockFacade.acquireLock(campId))) {
+				Thread.sleep(100);
+			}
+
+			// 캠프 및 유저 확인
+			Camp camp = campRepository.findById(campId)
+				.orElseThrow(() -> new CampException(ExceptionCode.NOT_FOUND_CAMP));
+
+			User user = userRepository.findById(authUser.getId())
+				.orElseThrow(() -> new UserException(ExceptionCode.NOT_FOUND_USER));
+
+			// 캠프 신청 상태 검증
+			UserCamp userCampCheck = userCampRepository.findByUserId(authUser.getId());
+			boolean campCheck = userCampRepository.existsActiveCampForUser(authUser.getId(), CampStatus.CLOSED);
+
+			if (userCampCheck != null && userCampCheck.getCamp().getRemainCount() <= 0) {
+				throw new CampException(ExceptionCode.EXCEEDED_CAMP_CAPACITY);
+			}
+
+			if (campCheck || (userCampCheck != null && campId.equals(userCampCheck.getCamp().getId()))) {
+				throw new CampException(ExceptionCode.ALREADY_APPLY_CAMP);
+			}
+
+			// 캠프 잔여 인원 감소 및 저장
+			camp.decreaseRemainCount();
+			UserCamp userCamp = UserCamp.of(user, camp);
+			userCampRepository.save(userCamp);
+
+			if (TransactionSynchronizationManager.isSynchronizationActive()) {
+				TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+					@Override
+					public void afterCommit() {
+						lettuceLockFacade.releaseLock(campId);
+						System.out.println("트랜잭션 커밋 후 락 해제");
+					}
+				});
+			}
+			return new ApplyResponseDto(camp);
+
+		} catch (InterruptedException e) {
+			throw new CampException(ExceptionCode.CAMP_LOCK_FAILED);
+		}
+	}
+
 }
