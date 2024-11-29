@@ -22,7 +22,7 @@
 |<div align="center">[박태우](https://github.com/lastdove)|팀 원| AOP, 예외처리 커스텀 </div> |
 |<div align="center">[육심헌](https://github.com/seongjun1130)|팀 원| 로그인, 회원가입, jwt, 커스텀 어노테이션 세팅 </div> |
 |<div align="center">[홍주영](https://github.com/92jy38)|팀 장| 캠프등록, 캠프조회(리스트, 단건) </div> |
-
+동시성 제어는 모두가 함께 
 
 ## Tools
 ### 🖥 language & Server 🖥
