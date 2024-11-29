@@ -1,6 +1,4 @@
 <div align="center">
-수정중 !!!!
-이미지 - 스파르타 부트캠프
  
 ![스파르타 부트캠프 5](https://github.com/user-attachments/assets/a57f2647-0de4-4556-8808-58acad1ca737)
 
@@ -22,7 +20,7 @@
 |<div align="center">[박태우](https://github.com/lastdove)|팀 원| AOP, 예외처리 커스텀 </div> |
 |<div align="center">[육심헌](https://github.com/seongjun1130)|팀 원| 로그인, 회원가입, jwt, 커스텀 어노테이션 세팅 </div> |
 |<div align="center">[홍주영](https://github.com/92jy38)|팀 장| 캠프등록, 캠프조회(리스트, 단건) </div> |
-동시성 제어는 모두가 함께 
+|||동시성 제어는 모두가 함께|
 
 ## Tools
 ### 🖥 language & Server 🖥
@@ -50,7 +48,7 @@
 Figma Link <br> <https://www.figma.com/board/y2RodlokIJzmsfTqVifYVd/Untitled?node-id=0-1&node-type=canvas&t=MEmZWhuoHy54wd6O-0>
 
 ## 개체 관계도 (ERD)
-![image](https://github.com/user-attachments/assets/9de0d0e9-c2d6-4d57-b9c8-811fd58fc34b)
+![image](https://github.com/user-attachments/assets/db226f9e-0e72-4043-9901-4dcaa4adab29)
 ERD Link <br> <https://lucid.app/lucidchart/cdcb1103-0d63-4844-8668-b85dfc080f76/edit?beaconFlowId=B2944693764F60C0&invitationId=inv_4887c034-406d-40dd-8f6b-9db6556600ab&page=0_0#>
 
 ## API 명세
@@ -66,16 +64,14 @@ ERD Link <br> <https://lucid.app/lucidchart/cdcb1103-0d63-4844-8668-b85dfc080f76
 <table>  <th>Method &nbsp;</th> <th>기능 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> <th>URL &nbsp;</th> <th>Request &nbsp;</th> <th>Response &nbsp;</th> <th>Status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> </tr> <tr> <td>POST</td> <td>상담 신청(등록)</td> <td><code>/counsels</code></td> <td> <pre lang="json"> { "tutor_id": 1, "content": "상담입니다.", "date": "2024-11-11", "time": "10:30" } </pre> </td> <td> <pre lang="json"> { "id": 1, "user_id": 1, "tutor_id": 1, "content": "상담입니다", "date": "2024-11-11", "time": "10:30", "status": "PENDING" } </pre> </td> <td>201 CREATED</td> </tr> <tr> <td>GET</td> <td>상담 조회(튜터)</td> <td><code>/tutor/counsels</code></td> <td>N/A</td> <td> <pre lang="json"> { "counsels": [ { "id": 1, "user_id": 1, "tutor_id": 1, "content": "상담입니다.", "date": "2024-11-11", "time": "10:30", "status": "PENDING" } ] } </pre> </td> <td>200 OK</td> </tr> <tr> <td>GET</td> <td>상담 조회(학생)</td> <td><code>/counsels</code></td> <td>N/A</td> <td> <pre lang="json"> { "id": 1, "user_id": 1, "tutor_id": 1, "content": "상담입니다.", "date": "2024-11-11", "time": "10:30", "status": "PENDING" } </pre> </td> <td>200 OK</td> </tr> <tr> <td>PUT</td> <td>상담 시간 조정하기</td> <td><code>/tutor/update-time</code></td> <td> <pre lang="json"> { "counselStart": "HH:MM:SS", "counselEnd": "HH:MM:SS" } </pre> </td> <td> <pre lang="json"> { "counselStart": "YY:DD:MM", "counselEnd": "YY:DD:MM" } </pre> </td> <td>200 OK, 403 FORBIDDEN</td> </tr> </table>
 
 ## 모든 API와 예외처리 Link
-<https://documenter.getpostman.com/view/29058403/2sAYBXBrBR>
+[<https://documenter.getpostman.com/view/29058403/2sAYBXBrBR>](https://documenter.getpostman.com/view/29058403/2sAYBXBrBR)
 
 </div>
-
-## 프로젝트 구조
-
 <div align="center">
 
-## Application 기능 구현
+## 동시성 이슈 기능 구현
 
 ## 트러블 슈팅
+<이미지 추가>
 
 </div>
