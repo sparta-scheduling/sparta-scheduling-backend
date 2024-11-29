@@ -21,4 +21,8 @@ public class LettuceLockFacade {
 		return redisLockRepository.unlock(campId);
 	}
 
+	public Boolean isLockAcquired(Long campId) {
+		return redisLockRepository.isLockAcquired(campId);
+	}
+
 }
