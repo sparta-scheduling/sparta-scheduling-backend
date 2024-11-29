@@ -1,8 +1,9 @@
 <div align="center">
 수정중 !!!!
 이미지 - 스파르타 부트캠프
+ 
 ![image](https://github.com/user-attachments/assets/6e323d97-bc1e-4cd2-8959-ed560ceab8d6)
-![image](https://github.com/user-attachments/assets/345aea95-eb31-4a6e-8b72-18ba4dc676d8)
+
 
 
 ## 👊 플러스 프로젝트 👊
