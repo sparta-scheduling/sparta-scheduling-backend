@@ -48,7 +48,7 @@
 Figma Link <br> <https://www.figma.com/board/y2RodlokIJzmsfTqVifYVd/Untitled?node-id=0-1&node-type=canvas&t=MEmZWhuoHy54wd6O-0>
 
 ## 개체 관계도 (ERD)
-![image](https://github.com/user-attachments/assets/db226f9e-0e72-4043-9901-4dcaa4adab29)
+![image](https://github.com/user-attachments/assets/017e6401-bc29-4ff8-bae4-3114da8107f4)
 ERD Link <br> <https://lucid.app/lucidchart/cdcb1103-0d63-4844-8668-b85dfc080f76/edit?beaconFlowId=B2944693764F60C0&invitationId=inv_4887c034-406d-40dd-8f6b-9db6556600ab&page=0_0#>
 
 ## API 명세
