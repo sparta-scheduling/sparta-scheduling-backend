@@ -70,8 +70,8 @@ ERD Link <br> <https://lucid.app/lucidchart/cdcb1103-0d63-4844-8668-b85dfc080f76
 <div align="center">
 
 ## 동시성 이슈 기능 구현
-
+<추가 예정>
 ## 트러블 슈팅
-<이미지 추가>
+<추가 예정>
 
 </div>
