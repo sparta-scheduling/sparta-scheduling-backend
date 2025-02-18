@@ -1,12 +1,15 @@
-<div align="center">
+
  
 ![스파르타 부트캠프 5](https://github.com/user-attachments/assets/a57f2647-0de4-4556-8808-58acad1ca737)
 
 
 ## 👊 플러스 프로젝트 👊
 #### 24.11.22 ~ 24.11.29
-### 부트캠프 신청했는데 동시성 이슈가 발생했어요ㅠㅠ<br>
-### 동시성 이슈 제어❗
+- Sparta Scheduling Bakcend는 부트캠프 수강 신청을 위한 서버로, 동시성이 중요한 환경에서 안정적인 신청 시스템을 구축하는 것을 목표로 합니다. 
+- 많은 사용자가 한번에 몰릴 경우 발생하는 데이터 무결성 문제를 해결하기 위해 여러 동시성 제어 방법을 실험하고 최적의 방법을 적용했습니다.
+
+<br>
+
 ![image](https://github.com/user-attachments/assets/0049ac75-136b-45b3-be3e-9fd21790a1fe)
 
 
@@ -37,6 +40,50 @@
 <img src="https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=FFFFFF"/></a><img src="https://img.shields.io/badge/slack-FE5196?style=for-the-badge&logo=slack&logoColor=FFFFFF"/></a>
 
 <br>
+
+## 동시성 이슈 기능 구현
+### 🚀 문제 정의
+* 캠프 신청자가 몰릴 경우 **remainCount**(남은 모집 인원)가 정확하게 감소해야 함
+* 동시 접근 시 **데이터 정합성**을 유지하면서도 **높은 처리 속도**를 보장해야 함
+* 트래픽이 급격히 증가하는 상황에서 **안정적인 성능**을 유지해야 함
+
+### ⚡ 해결 방법
+#### 1. 동시성 제어 기법
+여러 동시성 제어 방법을 실험 : 
+* 비관적 락, Lettuce, Redisson 
+
+#### 2. 성능 비교 및 선택
+500명이 한 캠프를 동시에 신청하는 환경 가정 : 
+* Lettuce 사용 시 평균 응답 시간이 가장 낮고 처리 속도가 가장 높음
+* 비관적 락은 처리 속도가 느려 적합하지 않음
+* Redisson은 최소 응답 시간이 짧았지만 평균 응답 시간이 다소 길었음
+* 따라서 Lettuce 기반의 분산 락을 적용하여 최적화
+
+#### 성능 테스트 결과 (JMeter 사용)
+* tps
+  * ![Image](https://github.com/user-attachments/assets/8b86fbf2-f954-46bf-9e26-bcad4548f941)
+
+
+* response time
+  * ![Image](https://github.com/user-attachments/assets/2a496f72-6d27-45fe-b394-f865aceec42f)
+
+
+* 최종 결과
+  * ![Image](https://github.com/user-attachments/assets/754edd04-036b-4ccb-b046-ba2b7d73f921)
+
+
+* **Lettuce 사용 시 성능이 가장 우수, 특히 응답 시간이 짧고 초당 처리량이 높음**
+
+### 🎯 결론
+* Redis 기반의 Lettuce 락을 사용해서 동시성 문제를 해결
+* 응답 속도와 처리량을 대폭 개선하여 원활한 캠프 신청 시스템 구현
+
+## 트러블 슈팅
+### 동시성 가정의 오류 수정
+* 상담 신청 기능에서 튜터 + 동일한 시간대 에 여러 학생이 동시에 신청할 경우, 같은 상담 요청이 중복 저장될 가능성이 있다고 예측
+* 따라서 동시성 문제를 방지하기 위해 상담 신청 기능에 낙관적 락을 적용하려 했으나, 상담 요청이 Update 되는 공유 데이터가 없었음
+* 이를 통해 동시성 이슈가 발생하는 조건을 정확히 이해하는 계기가 됨
+
 <hr/>
 
 ## 와이어 프레임
@@ -68,10 +115,5 @@ ERD Link <br> <https://lucid.app/lucidchart/cdcb1103-0d63-4844-8668-b85dfc080f76
 
 </div>
 <div align="center">
-
-## 동시성 이슈 기능 구현
-<추가 예정>
-## 트러블 슈팅
-<추가 예정>
 
 </div>
